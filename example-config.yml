@@ -3,6 +3,9 @@ config:
   s3_bucket: {{vars.PipelineBucket}}
   kms_key_arn: {{vars.KmsKey}}
 
+  codepipeline:
+    restart_execution_on_update: false
+
   codebuild:
     compute_type: BUILD_GENERAL1_SMALL
     image: {{vars.CodeBuildImage}}

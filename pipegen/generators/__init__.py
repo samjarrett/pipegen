@@ -1,4 +1,4 @@
-from . import codebuild, iam
+from . import codebuild, codepipeline, iam
 
 
 def generate(config):
@@ -24,6 +24,9 @@ def generate(config):
     definition, codepipeline_role_logical_name = iam.codepipeline_role(
         config, codebuild_logical_ids
     )
+    resources.update(definition)
+
+    definition, _ = codepipeline.pipeline(config, codepipeline_role_logical_name)
     resources.update(definition)
 
     return resources
