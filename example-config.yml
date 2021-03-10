@@ -1,0 +1,75 @@
+---
+config:
+  s3_bucket: {{vars.PipelineBucket}}
+  kms_key_arn: {{vars.KmsKey}}
+
+  codebuild:
+    compute_type: BUILD_GENERAL1_SMALL
+    image: {{vars.CodeBuildImage}}
+  
+    log_group: 
+      enabled: false
+      name: import:CodeBuildCloudWatchLogGroup
+      create: false
+
+  # iam:
+  #   - Effect: Allow
+  #     Action:
+  #       - s3:PutObject
+  #     Resource: 
+  #       - {{vars.S3BucketArn}}
+  #       - {{vars.S3BucketArn}}/*
+  #   - Effect: Allow
+  #     Action:
+  #       - s3:GetObject
+  #     Resource: 
+  #       - {{vars.S3BucketArn}}
+  #       - {{vars.S3BucketArn}}/*
+
+sources:
+  source:
+    from: CodeCommit
+    repository: my-repo
+    branch: {{vars.BranchName}}
+  sharedlib:
+    from: CodeCommit
+    repository: my-shared-lib
+    branch: main
+
+
+stages:
+  - name: Build
+    actions:
+      - name: Build
+        provider: CodeBuild
+        buildspec: buildspecs/build.yml
+        # 👇 any of the defaults should be overridable on a per-action basis
+        compute_type: BUILD_GENERAL1_MEDIUM
+        image: another-image
+        environment:
+          # all actions will get AWS_DEFAULT_REGION/AWS_REGION set to the current region as well
+          MY_VAR: {{vars.MyVar}}
+
+  - name: DevDeploy
+    actions:
+      - name: Deploy
+        provider: CodeBuild
+        buildspec: buildspecs/deploy.yml
+        environment:
+          MY_VAR: {{vars.MyVar}}
+          ANOTHER_VAR: import:CodeBuildCloudWatchLogGroup
+        input_artifacts:
+          # all actions will get the sources as input artifacts as well
+          - Build
+
+  - name: ProdDeploy
+    enabled: {{vars.BranchName == "main"}}
+    actions:
+      - name: ProdDeploy
+        provider: CodeBuild
+        image: 123456789012.dkr.ecr.ap-southeast-2.amazonaws.com/my-codebuild-image:latest
+        buildspec: buildspecs/deploy.yml
+        environment:
+          MY_VAR: {{vars.MyVar}}
+        input_artifacts:
+          - Build
