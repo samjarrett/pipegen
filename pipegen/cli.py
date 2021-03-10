@@ -1,6 +1,5 @@
-import json
-from typing import TYPE_CHECKING
 import logging
+from typing import TYPE_CHECKING
 
 import boto3
 import yaml
@@ -16,6 +15,13 @@ else:
     CloudFormationClient = object
 
 
+class NoAliasDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
+    """A yaml SafeDumper that doesn't use anchors"""
+
+    def ignore_aliases(self, data):
+        return True
+
+
 def main():
     """The main entry point"""
     args = parse_args()
@@ -26,9 +32,7 @@ def main():
 
     config = parse_config(args.config.read(), args.vars)
 
-    template = yaml.dump(
-        json.loads(json.dumps({"Resources": generate(config)})), sort_keys=True
-    )
+    template = yaml.dump({"Resources": generate(config)}, Dumper=NoAliasDumper)
 
     cloudformation: CloudFormationClient = boto3.client("cloudformation")
     stack = Stack(cloudformation, args.stack_name)
