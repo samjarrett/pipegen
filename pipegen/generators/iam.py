@@ -1,6 +1,8 @@
-from typing import Any, Iterable, NamedTuple, Optional, TypedDict, Union
+from typing import Iterable, Optional, TypedDict, Union
 
 from pipegen.config import FnGetAtt, FnSub, Ref, get_ecr_arn, parse_value
+
+from .interfaces import ResourceOutput
 
 S3_BUCKET_PERMISSIONS = [
     "s3:GetObject*",
@@ -30,13 +32,6 @@ class IAMPermissionDict(TypedDict):
     Effect: str
     Action: list[str]
     Resource: list[Union[str, FnSub, FnGetAtt, Ref]]
-
-
-class IAMResourceOutput(NamedTuple):
-    """An IAM Resource's output"""
-
-    definition: dict[str, Any]
-    role_logical_id: str
 
 
 def iam_permission(
@@ -94,7 +89,7 @@ def generate_role(resource_name: str, service: str, managed_policies: list[str])
     }
 
 
-def codepipeline_role(config, codebuild_projects: list[str]) -> IAMResourceOutput:
+def codepipeline_role(config, codebuild_projects: list[str]) -> ResourceOutput:
     """Generate a CodePipeline role + policy resources"""
     sub_config = config.get("config", {})
     permissions = [
@@ -129,18 +124,18 @@ def codepipeline_role(config, codebuild_projects: list[str]) -> IAMResourceOutpu
         ),
     ]
 
-    return IAMResourceOutput(
+    return ResourceOutput(
         definition={
             **generate_role(
                 "CodePipelineRole", "codepipeline.amazonaws.com", ["CodePipelinePolicy"]
             ),
             **generate_managed_policy("CodePipelinePolicy", permissions),
         },
-        role_logical_id="CodePipelineRole",
+        logical_id="CodePipelineRole",
     )
 
 
-def codebuild_role(config) -> IAMResourceOutput:
+def codebuild_role(config) -> ResourceOutput:
     """Generate a CodeBuild role + policy resources"""
     sub_config = config.get("config", {})
     permissions = []
@@ -245,12 +240,12 @@ def codebuild_role(config) -> IAMResourceOutput:
     if iam:
         permissions.extend(iam)
 
-    return IAMResourceOutput(
+    return ResourceOutput(
         definition={
             **generate_role(
                 "CodeBuildRole", "codebuild.amazonaws.com", ["CodeBuildPolicy"]
             ),
             **generate_managed_policy("CodeBuildPolicy", permissions),
         },
-        role_logical_id="CodeBuildRole",
+        logical_id="CodeBuildRole",
     )

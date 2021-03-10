@@ -12,7 +12,7 @@ def generate(config):
     codebuild_projects = codebuild.get_codebuild_projects(config)
     codebuild_logical_ids = []
     for codebuild_project in codebuild_projects:
-        definition, codebuild_project_logical_name = codebuild.codebuild_project(
+        definition, codebuild_project_logical_name = codebuild.project(
             codebuild_project,
             config.get("config", {}),
             codebuild_role_logical_name,

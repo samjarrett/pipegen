@@ -1,17 +1,11 @@
 import re
 from functools import reduce
-from typing import Any, NamedTuple
 
 from pipegen.config import parse_value
 
+from .interfaces import ResourceOutput
+
 PROJECT_LOGICAL_ID_PATTERN = re.compile(r"[\W_]+")
-
-
-class CodeBuildProjectResourceOutput(NamedTuple):
-    """An IAM Resource's output"""
-
-    definition: dict[str, Any]
-    logical_id: str
 
 
 def generate_logical_id(name: str) -> str:
@@ -31,11 +25,11 @@ def get_codebuild_projects(config):
             existing.extend(stage["actions"])
         return existing
 
-    def project_default_values(project: dict):
+    def project_default_values(project_config: dict):
         """Insert the default values"""
-        project.setdefault("image", default_image)
-        project.setdefault("compute_type", default_compute_type)
-        return project
+        project_config.setdefault("image", default_image)
+        project_config.setdefault("compute_type", default_compute_type)
+        return project_config
 
     projects = list(
         map(project_default_values, reduce(project_reducer, config["stages"], []))
@@ -44,9 +38,7 @@ def get_codebuild_projects(config):
     return projects
 
 
-def codebuild_project(
-    project_config, sub_config: dict, role_logical_id: str
-) -> CodeBuildProjectResourceOutput:
+def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceOutput:
     """Generate a CodeBuild project resource"""
     logical_id = generate_logical_id(project_config["name"])
 
@@ -96,7 +88,7 @@ def codebuild_project(
             }
         )
 
-    return CodeBuildProjectResourceOutput(
+    return ResourceOutput(
         definition={
             logical_id: {
                 "Type": "AWS::CodeBuild::Project",
