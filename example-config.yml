@@ -27,11 +27,11 @@ config:
   #       - {{vars.S3BucketArn}}/*
 
 sources:
-  source:
+  - name: Source
     from: CodeCommit
     repository: my-repo
     branch: {{vars.BranchName}}
-  sharedlib:
+  - name: MySharedLib
     from: CodeCommit
     repository: my-shared-lib
     branch: main

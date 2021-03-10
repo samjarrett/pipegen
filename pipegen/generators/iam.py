@@ -161,7 +161,7 @@ def codebuild_role(config) -> ResourceOutput:
 
     # Add Source perms
     codecommit_projects: list[Union[str, FnSub, FnGetAtt, Ref]] = []
-    for _, source in config.get("sources", {}).items():
+    for source in config.get("sources", []):
         if source.get("from", "").lower() == "codecommit":
             codecommit_projects.append(
                 parse_value(
