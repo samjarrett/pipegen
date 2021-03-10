@@ -1,0 +1,4 @@
+cfn-sync
+pyyaml
+cerberus
+jinja2
