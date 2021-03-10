@@ -124,6 +124,35 @@ def codepipeline_role(config, codebuild_projects: list[str]) -> ResourceOutput:
         ),
     ]
 
+    # Add Source perms
+    codecommit_projects: list[Union[str, FnSub, FnGetAtt, Ref]] = []
+    for source in config.get("sources", []):
+        if source.get("from", "").lower() == "codecommit":
+            codecommit_projects.append(
+                parse_value(
+                    "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${RepositoryName}",
+                    RepositoryName=source.get("repository"),
+                )
+            )
+        else:
+            raise NotImplementedError(
+                f"Source type '{source.get('from', '')}' is not supported yet"
+            )
+
+    if codecommit_projects:
+        permissions.append(
+            iam_permission(
+                [
+                    "codecommit:GetBranch",
+                    "codecommit:GetCommit",
+                    "codecommit:GetUploadArchiveStatus",
+                    "codecommit:UploadArchive",
+                    "codecommit:GitPull",
+                ],
+                codecommit_projects,
+            )
+        )
+
     return ResourceOutput(
         definition={
             **generate_role(
@@ -156,37 +185,6 @@ def codebuild_role(config) -> ResourceOutput:
                         LogGroupName=log_group.get("name", ""),
                     ),
                 ],
-            )
-        )
-
-    # Add Source perms
-    codecommit_projects: list[Union[str, FnSub, FnGetAtt, Ref]] = []
-    for source in config.get("sources", []):
-        if source.get("from", "").lower() == "codecommit":
-            codecommit_projects.append(
-                parse_value(
-                    "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${RepositoryName}",
-                    Region=source.get("region", "AWS::Region"),
-                    AccountId=source.get("account_id", "AWS::AccountId"),
-                    RepositoryName=source.get("repository"),
-                )
-            )
-        else:
-            raise NotImplementedError(
-                f"Source type '{source.get('from', '')}' is not supported yet"
-            )
-
-    if codecommit_projects:
-        permissions.append(
-            iam_permission(
-                [
-                    "codecommit:GetBranch",
-                    "codecommit:GetCommit",
-                    "codecommit:GetUploadArchiveStatus",
-                    "codecommit:UploadArchive",
-                    "codecommit:GitPull",
-                ],
-                codecommit_projects,
             )
         )
 
