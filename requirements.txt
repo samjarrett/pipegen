@@ -30,5 +30,7 @@ s3transfer==0.3.4
     # via boto3
 six==1.15.0
     # via python-dateutil
+typing-extensions==3.7.4.3
+    # via -r requirements.in
 urllib3==1.26.3
     # via botocore
