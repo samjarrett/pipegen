@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, TypedDict, Union
+from typing import Iterable, List, Optional, TypedDict, Union
 
 from pipegen.config import FnGetAtt, FnSub, Ref, get_ecr_arn, parse_value
 
@@ -30,12 +30,12 @@ class IAMPermissionDict(TypedDict):
     """An IAM Permission Dictionary"""
 
     Effect: str
-    Action: list[str]
-    Resource: list[Union[str, FnSub, FnGetAtt, Ref]]
+    Action: List[str]
+    Resource: List[Union[str, FnSub, FnGetAtt, Ref]]
 
 
 def iam_permission(
-    action: list[str], resource: list[Union[str, FnSub, FnGetAtt, Ref]]
+    action: List[str], resource: List[Union[str, FnSub, FnGetAtt, Ref]]
 ) -> IAMPermissionDict:
     """Return an IAM permission"""
     return {
@@ -45,7 +45,7 @@ def iam_permission(
     }
 
 
-def get_ecr_arns(image_list: list[Optional[str]]) -> Iterable[str]:
+def get_ecr_arns(image_list: List[Optional[str]]) -> Iterable[str]:
     """Reduce a list of images to ECR ARNs"""
     for image in image_list:
         try:
@@ -67,7 +67,7 @@ def generate_managed_policy(resource_name: str, permissions):
     }
 
 
-def generate_role(resource_name: str, service: str, managed_policies: list[str]):
+def generate_role(resource_name: str, service: str, managed_policies: List[str]):
     """Generate an IAM Role resource"""
     return {
         resource_name: {
@@ -89,7 +89,7 @@ def generate_role(resource_name: str, service: str, managed_policies: list[str])
     }
 
 
-def codepipeline_role(config, codebuild_projects: list[str]) -> ResourceOutput:
+def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
     """Generate a CodePipeline role + policy resources"""
     sub_config = config.get("config", {})
     permissions = [
@@ -125,7 +125,7 @@ def codepipeline_role(config, codebuild_projects: list[str]) -> ResourceOutput:
     ]
 
     # Add Source perms
-    codecommit_projects: list[Union[str, FnSub, FnGetAtt, Ref]] = []
+    codecommit_projects: List[Union[str, FnSub, FnGetAtt, Ref]] = []
     for source in config.get("sources", []):
         if source.get("from", "").lower() == "codecommit":
             codecommit_projects.append(

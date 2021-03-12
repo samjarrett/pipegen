@@ -1,3 +1,5 @@
+from typing import Dict
+
 from pipegen.config import parse_value
 
 from .codebuild import generate_logical_id
@@ -6,7 +8,7 @@ from .interfaces import ResourceOutput
 LOGICAL_ID = "CodePipeline"
 
 
-def source_action_definition(source: dict[str, str]) -> dict:
+def source_action_definition(source: Dict[str, str]) -> dict:
     """Get a Source's CodePipeline Action definition"""
     if source.get("from", "").lower() == "codecommit":
         return {

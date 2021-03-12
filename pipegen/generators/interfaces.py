@@ -1,8 +1,8 @@
-from typing import Any, NamedTuple
+from typing import Any, Dict, NamedTuple
 
 
 class ResourceOutput(NamedTuple):
     """A CloudFormation Resource's output"""
 
-    definition: dict[str, Any]
+    definition: Dict[str, Any]
     logical_id: str
