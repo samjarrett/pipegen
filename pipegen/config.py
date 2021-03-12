@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Tuple, TypedDict, Union
+from typing import Any, Dict, List, Tuple, TypedDict, Union
 
 import yaml
 from jinja2 import Environment, StrictUndefined
@@ -12,7 +12,7 @@ REPO_REGEX = (
 # {"Ref": key}
 Ref = TypedDict("Ref", {"Ref": str})
 # {"Fn::GetAtt": [resource, key]}
-FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": list[str]})
+FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": List[str]})
 # {"Fn::ImportValue": key}
 FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
 # { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
