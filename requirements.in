@@ -1,5 +1,4 @@
 cfn-sync>=0.0.9
 boto3
 pyyaml
-cerberus
 jinja2
