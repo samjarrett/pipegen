@@ -82,10 +82,17 @@ python-dateutil==2.8.1
     # via
     #   -r requirements.txt
     #   botocore
-pyyaml==5.4.1
-    # via -r requirements.txt
+    #   strictyaml
 regex==2021.3.17
     # via black
+ruamel.yaml.clib==0.2.2
+    # via
+    #   -r requirements.txt
+    #   ruamel.yaml
+ruamel.yaml==0.17.2
+    # via
+    #   -r requirements.txt
+    #   strictyaml
 s3transfer==0.3.6
     # via
     #   -r requirements.txt
@@ -94,6 +101,8 @@ six==1.15.0
     # via
     #   -r requirements.txt
     #   python-dateutil
+strictyaml==1.4.0
+    # via -r requirements.txt
 toml==0.10.2
     # via
     #   black
