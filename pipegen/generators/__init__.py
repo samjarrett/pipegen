@@ -1,10 +1,14 @@
-from . import codebuild, codepipeline, iam
+from . import codebuild, codepipeline, iam, logs
 
 
 def generate(config):
     """Generate all config elements"""
 
     resources = {}
+
+    log_group = logs.log_group(config)
+    if log_group:
+        resources.update(log_group.definition)
 
     definition, codebuild_role_logical_name = iam.codebuild_role(config)
     resources.update(definition)
