@@ -59,12 +59,3 @@ def get_ecr_arn(repo_uri: str) -> str:
         raise RuntimeError("URI provided doesn't appear to be an ECR URI")
 
     return f"arn:aws:ecr:{match['region']}:{match['account']}:repository/{match['repository_name']}"
-
-
-def codecommit_git_https_uri(source_config: Dict[str, Union[str, bool]]) -> FnSub:
-    """Convert source config dict to a git URI"""
-    return parse_value(
-        "https://git-codecommit.${Region}.amazonaws.com/v1/repos/${RepositoryName}",
-        Region=source_config.get("region", "AWS::Region"),
-        RepositoryName=source_config.get("repository"),
-    )  # type: ignore
