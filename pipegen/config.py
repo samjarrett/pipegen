@@ -1,22 +1,30 @@
 import re
-from typing import Any, Dict, List, Tuple, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
 
 import yaml
 from jinja2 import Environment, StrictUndefined
+
+if TYPE_CHECKING:
+    from typing_extensions import TypedDict
+
+    # {"Ref": key}
+    Ref = TypedDict("Ref", {"Ref": str})
+    # {"Fn::GetAtt": [resource, key]}
+    FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": List[str]})
+    # {"Fn::ImportValue": key}
+    FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
+    # { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
+    FnSub = Dict[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]
+else:
+    Ref = object
+    FnGetAtt = object
+    FnImportValue = object
+    FnSub = object
 
 REPO_REGEX = (
     r"(?P<account>[\d]{12}).dkr.ecr.(?P<region>[a-z]{2}-[a-z]+-[\d]+)."
     r"amazonaws.com/(?P<repository_name>[a-z0-9\-\/]+)(?:\:(?P<tag>.+))?"
 )
-
-# {"Ref": key}
-Ref = TypedDict("Ref", {"Ref": str})
-# {"Fn::GetAtt": [resource, key]}
-FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": List[str]})
-# {"Fn::ImportValue": key}
-FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
-# { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
-FnSub = Dict[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]
 
 
 def parse_config(config: str, config_vars: Dict[str, str]) -> Dict[str, Any]:
