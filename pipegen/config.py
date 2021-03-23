@@ -35,15 +35,15 @@ def parse_value(template: str, **kwargs) -> Union[str, FnSub, Ref]:
         value = kwargs[key]
         # check if our template exactly matches "${Key}"
         if template == f"${{{key}}}":
-            if value.startswith("AWS::"):
+            if str(value).startswith("AWS::"):
                 return {"Ref": value}
-            if not value.startswith("import:"):
+            if not str(value).startswith("import:"):
                 return value
 
     subbed_args = {}
 
     for key, value in kwargs.items():
-        if value.startswith("import:"):
+        if str(value).startswith("import:"):
             value = {"Fn::ImportValue": value[7:]}
         subbed_args[key] = value
 

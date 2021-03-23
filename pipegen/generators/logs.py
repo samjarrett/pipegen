@@ -24,6 +24,9 @@ def log_group(config) -> Optional[ResourceOutput]:
         "LogGroupName": parse_value(
             "${LogGroupName}", LogGroupName=log_group_config.get("name")
         ),
+        "RetentionInDays": parse_value(
+            "${Retention}", Retention=log_group_config.get("retention", "AWS::NoValue")
+        ),
     }
 
     return ResourceOutput(
