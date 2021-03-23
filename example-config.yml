@@ -11,9 +11,10 @@ config:
     image: {{vars.CodeBuildImage}}
   
     log_group: 
-      enabled: false
+      enabled: true
       name: import:CodeBuildCloudWatchLogGroup
-      create: false
+      create: true
+      retention: 7 # days
 
   # iam:
   #   - Effect: Allow

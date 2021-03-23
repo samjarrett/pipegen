@@ -1,22 +1,30 @@
 import re
-from typing import Any, Dict, List, Tuple, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
 
 import yaml
 from jinja2 import Environment, StrictUndefined
+
+if TYPE_CHECKING:
+    from typing_extensions import TypedDict
+
+    # {"Ref": key}
+    Ref = TypedDict("Ref", {"Ref": str})
+    # {"Fn::GetAtt": [resource, key]}
+    FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": List[str]})
+    # {"Fn::ImportValue": key}
+    FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
+    # { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
+    FnSub = Dict[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]
+else:
+    Ref = object
+    FnGetAtt = object
+    FnImportValue = object
+    FnSub = object
 
 REPO_REGEX = (
     r"(?P<account>[\d]{12}).dkr.ecr.(?P<region>[a-z]{2}-[a-z]+-[\d]+)."
     r"amazonaws.com/(?P<repository_name>[a-z0-9\-\/]+)(?:\:(?P<tag>.+))?"
 )
-
-# {"Ref": key}
-Ref = TypedDict("Ref", {"Ref": str})
-# {"Fn::GetAtt": [resource, key]}
-FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": List[str]})
-# {"Fn::ImportValue": key}
-FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
-# { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
-FnSub = Dict[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]
 
 
 def parse_config(config: str, config_vars: Dict[str, str]) -> Dict[str, Any]:
@@ -35,15 +43,15 @@ def parse_value(template: str, **kwargs) -> Union[str, FnSub, Ref]:
         value = kwargs[key]
         # check if our template exactly matches "${Key}"
         if template == f"${{{key}}}":
-            if value.startswith("AWS::"):
+            if str(value).startswith("AWS::"):
                 return {"Ref": value}
-            if not value.startswith("import:"):
+            if not str(value).startswith("import:"):
                 return value
 
     subbed_args = {}
 
     for key, value in kwargs.items():
-        if value.startswith("import:"):
+        if str(value).startswith("import:"):
             value = {"Fn::ImportValue": value[7:]}
         subbed_args[key] = value
 
@@ -59,12 +67,3 @@ def get_ecr_arn(repo_uri: str) -> str:
         raise RuntimeError("URI provided doesn't appear to be an ECR URI")
 
     return f"arn:aws:ecr:{match['region']}:{match['account']}:repository/{match['repository_name']}"
-
-
-def codecommit_git_https_uri(source_config: Dict[str, Union[str, bool]]) -> FnSub:
-    """Convert source config dict to a git URI"""
-    return parse_value(
-        "https://git-codecommit.${Region}.amazonaws.com/v1/repos/${RepositoryName}",
-        Region=source_config.get("region", "AWS::Region"),
-        RepositoryName=source_config.get("repository"),
-    )  # type: ignore

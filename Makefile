@@ -1,4 +1,4 @@
-FILES := pipegen setup.py
+FILES := pipegen tests setup.py
 
 lint:
 	pylint ${FILES}
@@ -6,8 +6,8 @@ lint:
 	isort ${FILES} --check-only
 
 test:
-	# pytest --cov pipegen
-	mypy pipegen
+	python -m pytest --cov pipegen --cov-report term --cov-report html
+	mypy pipegen tests
 
 fix:
 	black ${FILES}
