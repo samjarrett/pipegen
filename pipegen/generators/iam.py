@@ -4,7 +4,7 @@ from pipegen.config import FnGetAtt, FnSub, Ref, get_ecr_arn, parse_value
 
 from .interfaces import ResourceOutput
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from typing_extensions import TypedDict
 else:
     TypedDict = object

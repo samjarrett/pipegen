@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
 import yaml
 from jinja2 import Environment, StrictUndefined
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from typing_extensions import TypedDict
 
     # {"Ref": key}
