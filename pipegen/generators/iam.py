@@ -1,3 +1,4 @@
+from copy import copy
 from typing import TYPE_CHECKING, Iterable, List, Optional, Union
 
 from pipegen.config import FnGetAtt, FnSub, Ref, get_ecr_arn, parse_value
@@ -99,7 +100,7 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
     sub_config = config.get("config", {})
     permissions = [
         iam_permission(
-            S3_BUCKET_PERMISSIONS,
+            copy(S3_BUCKET_PERMISSIONS),
             [
                 parse_value(
                     "arn:aws:s3:::${BucketName}",
@@ -112,7 +113,7 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
             ],
         ),
         iam_permission(
-            KMS_KEY_PERMISSIONS,
+            copy(KMS_KEY_PERMISSIONS),
             [
                 parse_value(
                     "${KmsKeyArn}",
@@ -121,7 +122,7 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
             ],
         ),
         iam_permission(
-            CODEPIPELINE_CODEBUILD_PERMISSIONS,
+            copy(CODEPIPELINE_CODEBUILD_PERMISSIONS),
             [
                 {"Fn::GetAtt": [codebuild_project, "Arn"]}
                 for codebuild_project in codebuild_projects
@@ -132,7 +133,8 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
     # Add Source perms
     codecommit_projects: List[Union[str, FnSub, FnGetAtt, Ref]] = []
     for source in config.get("sources", []):
-        if source.get("from", "").lower() == "codecommit":
+        source_from = source.get("from", "").lower()
+        if source_from == "codecommit":
             codecommit_projects.append(
                 parse_value(
                     "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${RepositoryName}",
@@ -141,7 +143,7 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
             )
         else:
             raise NotImplementedError(
-                f"Source type '{source.get('from', '')}' is not supported yet"
+                f"Source type '{source_from}' is not supported yet"
             )
 
     if codecommit_projects:
@@ -176,7 +178,7 @@ def codebuild_role(config) -> ResourceOutput:
 
     # Add CW Logs perms
     log_group = sub_config.get("codebuild", {}).get("log_group", {})
-    if log_group.get("enabled", False):
+    if log_group.get("enabled"):
         permissions.append(
             iam_permission(
                 ["logs:CreateLogStream", "logs:PutLogEvents"],
@@ -214,7 +216,7 @@ def codebuild_role(config) -> ResourceOutput:
     permissions.extend(
         [
             iam_permission(
-                S3_BUCKET_PERMISSIONS,
+                copy(S3_BUCKET_PERMISSIONS),
                 [
                     parse_value(
                         "arn:aws:s3:::${BucketName}",
@@ -227,7 +229,7 @@ def codebuild_role(config) -> ResourceOutput:
                 ],
             ),
             iam_permission(
-                KMS_KEY_PERMISSIONS,
+                copy(KMS_KEY_PERMISSIONS),
                 [
                     parse_value(
                         "${KmsKeyArn}",
