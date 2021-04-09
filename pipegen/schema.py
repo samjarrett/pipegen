@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 from typing import Optional as OptionalType
 
 from strictyaml import (
@@ -13,6 +13,15 @@ from strictyaml import (
     Seq,
     Str,
 )
+
+CODEPIPELINE_DEFAULTS: Dict = {
+    "restart_execution_on_update": False,
+}
+CODEBUILD_DEFAULTS: Dict = {
+    "compute_type": "BUILD_GENERAL1_SMALL",
+    "image": "aws/codebuild/amazonlinux2-x86_64-standard:3.0",
+    "log_group": {"enabled": False, "create": True},
+}
 
 
 def generate_schema(
@@ -31,29 +40,44 @@ def generate_schema(
                 {
                     "s3_bucket": Str(),
                     "kms_key_arn": Str(),
-                    Optional(
-                        "codepipeline", default={"restart_execution_on_update": False}
-                    ): Map(
+                    Optional("codepipeline", default=CODEPIPELINE_DEFAULTS,): Map(
                         {
                             Optional(
-                                "restart_execution_on_update", default=False
+                                "restart_execution_on_update",
+                                default=CODEPIPELINE_DEFAULTS[
+                                    "restart_execution_on_update"
+                                ],
                             ): Bool(),
                         }
                     ),
-                    "codebuild": Map(
+                    Optional("codebuild", default=CODEBUILD_DEFAULTS): Map(
                         {
                             Optional(
-                                "compute_type", default="BUILD_GENERAL1_SMALL"
+                                "compute_type",
+                                default=CODEBUILD_DEFAULTS["compute_type"],
                             ): Str(),
                             Optional(
                                 "image",
-                                default="aws/codebuild/amazonlinux2-x86_64-standard:3.0",
+                                default=CODEBUILD_DEFAULTS["image"],
                             ): Str(),
-                            "log_group": Map(
+                            Optional(
+                                "log_group",
+                                default=CODEBUILD_DEFAULTS["log_group"],
+                            ): Map(
                                 {
-                                    Optional("enabled", default=False): Bool(),
+                                    Optional(
+                                        "enabled",
+                                        default=CODEBUILD_DEFAULTS["log_group"][
+                                            "enabled"
+                                        ],
+                                    ): Bool(),
                                     Optional("name"): Str(),
-                                    Optional("create", default=True): Bool(),
+                                    Optional(
+                                        "create",
+                                        default=CODEBUILD_DEFAULTS["log_group"][
+                                            "create"
+                                        ],
+                                    ): Bool(),
                                     Optional("retention"): Int(),
                                 }
                             ),

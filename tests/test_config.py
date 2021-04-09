@@ -45,6 +45,42 @@ def test_parse_config():
         s3_bucket: my-bucket
         kms_key_arn: kms-key-arn
 
+    sources:
+        - name: Source
+          from: CodeCommit
+          repository: my-repo
+          branch: main
+
+    stages:
+        - name: Build
+          actions:
+            - name: Build
+              provider: CodeBuild
+              buildspec: buildspecs/build.yml
+    """
+    rendered_config = config.parse_config(check_config, {})
+    assert rendered_config is not None
+
+    # Test that base defaults are applied
+    assert rendered_config["config"]["codebuild"] is not None
+    assert (
+        rendered_config["config"]["codebuild"]["compute_type"] == "BUILD_GENERAL1_SMALL"
+    )
+    assert (
+        rendered_config["config"]["codebuild"]["image"]
+        == "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+    )
+    assert rendered_config["config"]["codebuild"]["log_group"] == {
+        "enabled": False,
+        "create": True,
+    }
+
+    # Test compute_type and image defaults pass through to build stages
+    check_config = """
+    config:
+        s3_bucket: my-bucket
+        kms_key_arn: kms-key-arn
+
         codebuild:
             compute_type: BUILD_GENERAL1_SMALL
             image: codebuild-image
@@ -66,14 +102,12 @@ def test_parse_config():
               buildspec: buildspecs/build.yml
     """
     rendered_config = config.parse_config(check_config, {})
-    assert rendered_config is not None
-
-    # Test that the defaults pass through
     for stage in rendered_config["stages"]:
         for action in stage["actions"]:
             assert action["compute_type"] == "BUILD_GENERAL1_SMALL"
             assert action["image"] == "codebuild-image"
 
+    # Test that input_artifacts are validated correctly - this should exception
     check_config = """
     config:
         s3_bucket: my-bucket
