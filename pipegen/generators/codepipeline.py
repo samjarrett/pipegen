@@ -10,7 +10,8 @@ LOGICAL_ID = "CodePipeline"
 
 def source_action_definition(source: Dict[str, str]) -> dict:
     """Get a Source's CodePipeline Action definition"""
-    if source.get("from", "").lower() == "codecommit":
+    source_from = source.get("from", "").lower()
+    if source_from == "codecommit":
         return {
             "Name": source.get("name"),
             "ActionTypeId": {
@@ -26,14 +27,12 @@ def source_action_definition(source: Dict[str, str]) -> dict:
                 "BranchName": parse_value(
                     "${BranchName}", BranchName=source.get("branch")
                 ),
-                "PollForSourceChanges": source.get("poll_for_source_changes", False),
+                "PollForSourceChanges": source.get("poll_for_source_changes"),
             },
             "OutputArtifacts": [{"Name": source.get("name")}],
         }
 
-    raise NotImplementedError(
-        f"Source type '{source.get('from', '')}' is not supported yet"
-    )
+    raise NotImplementedError(f"Source type '{source_from}' is not supported yet")
 
 
 def codebuild_action_definition(action, source_names) -> dict:
@@ -43,7 +42,7 @@ def codebuild_action_definition(action, source_names) -> dict:
     return {
         "Name": action.get("name"),
         "ActionTypeId": {
-            "Category": action.get("category", "Build"),
+            "Category": action.get("category"),
             "Owner": "AWS",
             "Provider": "CodeBuild",
             "Version": 1,
@@ -84,7 +83,7 @@ def pipeline(config, role_logical_id: str) -> ResourceOutput:
             ],
         }
         for stage in filter(
-            lambda stage: stage.get("enabled", True), config.get("stages", [])
+            lambda stage: stage.get("enabled"), config.get("stages", [])
         )
     ]
 
@@ -103,7 +102,7 @@ def pipeline(config, role_logical_id: str) -> ResourceOutput:
             "Type": "S3",
         },
         "RestartExecutionOnUpdate": sub_config.get("codepipeline", {}).get(
-            "restart_execution_on_update", True
+            "restart_execution_on_update"
         ),
         "RoleArn": {"Fn::GetAtt": [role_logical_id, "Arn"]},
         "Stages": [

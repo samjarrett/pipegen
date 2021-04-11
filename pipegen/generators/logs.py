@@ -12,9 +12,7 @@ def log_group(config) -> Optional[ResourceOutput]:
     sub_config = config.get("config", {})
     log_group_config = sub_config.get("codebuild", {}).get("log_group", {})
 
-    if not log_group_config.get("enabled", False) or not log_group_config.get(
-        "create", True
-    ):
+    if not log_group_config.get("enabled") or not log_group_config.get("create"):
         return None
 
     resource_properties = {

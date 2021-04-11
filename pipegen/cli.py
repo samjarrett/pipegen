@@ -1,11 +1,12 @@
 import logging
-from io import TextIOWrapper
+import sys
+from io import StringIO, TextIOWrapper
 from typing import TYPE_CHECKING, Dict
 
 import boto3
 import click
-import yaml
 from cfn_sync import Stack
+from ruamel.yaml import YAML
 
 from .args import CONFIG_OPTION, VARS_OPTION
 from .config import parse_config
@@ -17,11 +18,11 @@ else:
     CloudFormationClient = object
 
 
-class NoAliasDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
-    """A yaml SafeDumper that doesn't use anchors"""
-
-    def ignore_aliases(self, data):
-        return True
+def dump_yaml(template, output=sys.stdout):
+    """Dumps YAML out to output file"""
+    yaml = YAML()
+    yaml.indent(sequence=4, offset=2)
+    yaml.dump(template, output)
 
 
 @click.group()
@@ -40,7 +41,9 @@ def deploy(config_file: TextIOWrapper, var_overrides: Dict[str, str], stack_name
     """Deploy CodePipeline stack"""
     config = parse_config(config_file.read(), var_overrides)
 
-    template = yaml.dump({"Resources": generate(config)}, Dumper=NoAliasDumper)
+    output = StringIO()
+    dump_yaml({"Resources": generate(config)}, output)
+    template = output.getvalue()
 
     cloudformation: CloudFormationClient = boto3.client("cloudformation")
     stack = Stack(cloudformation, stack_name)
@@ -59,7 +62,7 @@ def dump():
 def dump_config(config_file: TextIOWrapper, var_overrides: Dict[str, str]):
     """Dump the compiled configuration"""
     config = parse_config(config_file.read(), var_overrides)
-    print(yaml.dump(config, Dumper=NoAliasDumper))
+    dump_yaml(config)
 
 
 @dump.command(name="template")
@@ -68,8 +71,7 @@ def dump_config(config_file: TextIOWrapper, var_overrides: Dict[str, str]):
 def dump_template(config_file: TextIOWrapper, var_overrides: Dict[str, str]):
     """Dump the compiled configuration"""
     config = parse_config(config_file.read(), var_overrides)
-    template = yaml.dump({"Resources": generate(config)}, Dumper=NoAliasDumper)
-    print(template)
+    dump_yaml({"Resources": generate(config)})
 
 
 if __name__ == "__main__":

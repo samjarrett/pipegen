@@ -25,12 +25,18 @@ jmespath==0.10.0
 markupsafe==1.1.1
     # via jinja2
 python-dateutil==2.8.1
-    # via botocore
-pyyaml==5.4.1
-    # via -r requirements.in
+    # via
+    #   botocore
+    #   strictyaml
+ruamel.yaml.clib==0.2.2
+    # via ruamel.yaml
+ruamel.yaml==0.17.2
+    # via strictyaml
 s3transfer==0.3.6
     # via boto3
 six==1.15.0
     # via python-dateutil
+strictyaml==1.4.0
+    # via -r requirements.in
 urllib3==1.26.4
     # via botocore

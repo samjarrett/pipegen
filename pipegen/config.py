@@ -1,8 +1,10 @@
 import re
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
 
-import yaml
 from jinja2 import Environment, StrictUndefined
+from strictyaml import YAML, load
+
+from .schema import generate_schema
 
 if TYPE_CHECKING:  # pragma: no cover
     from typing_extensions import TypedDict
@@ -27,13 +29,43 @@ REPO_REGEX = (
 )
 
 
-def parse_config(config: str, config_vars: Dict[str, str]) -> Dict[str, Any]:
-    """Parse a config and return a Dictionary of the data"""
+def get_stage_action_field(stages, field: str) -> List:
+    """Get a Stage[].Action[].(field) value"""
+    values = []
+    for stage in stages:
+        for action in stage.get("actions", []):
+            values.append(action[field])
+
+    return values
+
+
+def load_config(config: str, config_vars: Dict[str, str]) -> YAML:
+    """Loads config and return a Dictionary of the data"""
     environment = Environment(undefined=StrictUndefined)
     template = environment.from_string(config)
     rendered_config = template.render(vars=config_vars)
 
-    return yaml.load(rendered_config, Loader=yaml.SafeLoader)
+    return load(rendered_config, schema=generate_schema())
+
+
+def parse_config(config: str, config_vars: Dict[str, str]) -> Dict[str, Any]:
+    """Parse a config and return a Dictionary of the data"""
+    data = load_config(config, config_vars)
+
+    stage_actions = get_stage_action_field(data["stages"], "name")
+    default_compute_type = str(data["config"]["codebuild"]["compute_type"])
+    default_image = str(data["config"]["codebuild"]["image"])
+
+    # Revalidate to get the stage actions and add defaults
+    data.revalidate(
+        generate_schema(
+            stage_actions=stage_actions,
+            default_compute_type=default_compute_type,
+            default_image=default_image,
+        )
+    )
+
+    return data.data
 
 
 def parse_value(template: str, **kwargs) -> Union[str, FnSub, Ref]:

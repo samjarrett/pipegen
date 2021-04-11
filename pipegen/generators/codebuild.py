@@ -1,7 +1,7 @@
 import re
 from functools import reduce
 
-from pipegen.config import parse_value
+from pipegen.config import get_ecr_arn, parse_value
 
 from .interfaces import ResourceOutput
 
@@ -15,27 +15,25 @@ def generate_logical_id(name: str) -> str:
 
 def get_codebuild_projects(config):
     """Get all the codebuild projects required"""
-    sub_config = config.get("config", {})
-    default_image = sub_config.get("codebuild", {}).get("image")
-    default_compute_type = sub_config.get("codebuild", {}).get("compute_type")
 
     def project_reducer(existing, stage: dict):
         """The reducer"""
-        if stage.get("enabled", True):
+        if stage.get("enabled"):
             existing.extend(stage["actions"])
         return existing
 
-    def project_default_values(project_config: dict):
-        """Insert the default values"""
-        project_config.setdefault("image", default_image)
-        project_config.setdefault("compute_type", default_compute_type)
-        return project_config
-
-    projects = list(
-        map(project_default_values, reduce(project_reducer, config["stages"], []))
-    )
+    projects = list(reduce(project_reducer, config["stages"], []))
 
     return projects
+
+
+def is_ecr(image: str) -> bool:
+    """Determines if the image is from ECR or not"""
+    try:
+        get_ecr_arn(image)
+        return True
+    except RuntimeError:
+        return False
 
 
 def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceOutput:
@@ -46,6 +44,10 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
     environment_variables.setdefault("AWS_DEFAULT_REGION", "AWS::Region")
     environment_variables.setdefault("AWS_REGION", "AWS::Region")
 
+    image_credential_type = (
+        "SERVICE_ROLE" if is_ecr(project_config["image"]) else "CODEBUILD"
+    )
+
     resource_properties = {
         "Artifacts": {"Type": "CODEPIPELINE"},
         "Environment": {
@@ -53,7 +55,7 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
                 "${ComputeType}", ComputeType=project_config["compute_type"]
             ),
             "Image": parse_value("${Image}", Image=project_config["image"]),
-            "ImagePullCredentialsType": "SERVICE_ROLE",
+            "ImagePullCredentialsType": image_credential_type,
             "EnvironmentVariables": [
                 {"Name": key, "Value": parse_value("${Value}", Value=value)}
                 for key, value in environment_variables.items()
@@ -74,7 +76,7 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
     }
 
     log_group = sub_config.get("codebuild", {}).get("log_group", {})
-    if log_group.get("enabled", False):
+    if log_group.get("enabled"):
         resource_properties.update(
             {
                 "LogsConfig": {
