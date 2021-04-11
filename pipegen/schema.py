@@ -105,6 +105,7 @@ def generate_schema(
                         "repository": Str(),
                         "branch": Str(),
                         Optional("poll_for_source_changes", default=False): Bool(),
+                        Optional("event_for_source_changes", default=True): Bool(),
                     }
                 )
             ),

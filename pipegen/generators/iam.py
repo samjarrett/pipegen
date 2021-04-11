@@ -254,3 +254,29 @@ def codebuild_role(config) -> ResourceOutput:
         },
         logical_id="CodeBuildRole",
     )
+
+
+def cloud_watch_event_role(codepipeline_logical_id: str) -> ResourceOutput:
+    """Generate a CloudWatch event role to kick off CodePipelines"""
+    permissions = [
+        iam_permission(
+            ["codepipeline:StartPipelineExecution"],
+            [
+                {
+                    "Fn::Sub": f"arn:aws:codepipeline:${{AWS::Region}}:${{AWS::AccountId}}:${{{codepipeline_logical_id}}}"
+                }
+            ],
+        )
+    ]
+
+    return ResourceOutput(
+        definition={
+            **generate_role(
+                "CloudWatchEventsRole",
+                "events.amazonaws.com",
+                ["CloudWatchEventsPolicy"],
+            ),
+            **generate_managed_policy("CloudWatchEventsPolicy", permissions),
+        },
+        logical_id="CloudWatchEventsRole",
+    )
