@@ -16,7 +16,12 @@ if TYPE_CHECKING:  # pragma: no cover
     # {"Fn::ImportValue": key}
     FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
     # { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
-    FnSub = Dict[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]
+    # OR:
+    # { "Fn::Sub" : String }
+    FnSub = TypedDict(
+        "FnSub",
+        {"Fn::Sub": Union[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]},
+    )
 else:
     Ref = object
     FnGetAtt = object
@@ -37,6 +42,19 @@ def get_stage_action_field(stages, field: str) -> List:
             values.append(action[field])
 
     return values
+
+
+def contains_codecommit_with_event(config) -> bool:
+    """Check if the sources have a CodeCommit repo with CloudWatch events for change detection"""
+    for source in config.get("sources", []):
+        if is_codecommit_with_event_source(source):
+            return True
+    return False
+
+
+def is_codecommit_with_event_source(source: Dict) -> bool:
+    """Check if a source is a CodeCommit repo with CloudWatch events for change detection"""
+    return source["from"] == "CodeCommit" and source["event_for_source_changes"]
 
 
 def load_config(config: str, config_vars: Dict[str, str]) -> YAML:

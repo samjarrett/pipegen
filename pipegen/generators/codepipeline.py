@@ -1,6 +1,7 @@
+import re
 from typing import Dict
 
-from pipegen.config import parse_value
+from pipegen.config import is_codecommit_with_event_source, parse_value
 
 from .codebuild import generate_logical_id
 from .interfaces import ResourceOutput
@@ -123,3 +124,59 @@ def pipeline(config, role_logical_id: str) -> ResourceOutput:
         },
         logical_id=LOGICAL_ID,
     )
+
+
+def cloudwatch_events(
+    config, cloudwatch_events_role_logical_id: str, codepipeline_logical_id: str
+) -> ResourceOutput:
+    """Generate a CloudWatch Event to detect source changes"""
+    sources = config.get("sources", [])
+
+    source_pattern = re.compile(r"[\W_]+")
+
+    resources = {}
+
+    for source in sources:
+        if not is_codecommit_with_event_source(source):
+            continue
+
+        # Generate a CFN event
+        logical_id = f"{source_pattern.sub('', source['name'])}PushEventRule"
+
+        resources[logical_id] = {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "EventPattern": {
+                    "source": ["aws.codecommit"],
+                    "detail-type": ["CodeCommit Repository State Change"],
+                    "resources": [
+                        parse_value(
+                            "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${Repository}",
+                            Repository=source["repository"],
+                        )
+                    ],
+                    "detail": {
+                        "event": ["referenceCreated", "referenceUpdated"],
+                        "referenceType": ["branch"],
+                        "referenceName": [
+                            parse_value(
+                                "${BranchName}", BranchName=source.get("branch")
+                            )
+                        ],
+                    },
+                },
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::Sub": f"arn:aws:codepipeline:${{AWS::Region}}:${{AWS::AccountId}}:${{{codepipeline_logical_id}}}"
+                        },
+                        "RoleArn": {
+                            "Fn::GetAtt": [cloudwatch_events_role_logical_id, "Arn"]
+                        },
+                        "Id": {"Fn::Sub": f"${{AWS::StackName}}-{logical_id}"},
+                    }
+                ],
+            },
+        }
+
+    return ResourceOutput(definition=resources, logical_id="")

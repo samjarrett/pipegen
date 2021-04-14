@@ -93,7 +93,9 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
         resource_properties.update(
             {
                 "LogsConfig": {
-                    "Status": "DISABLED",
+                    "CloudWatchLogs": {
+                        "Status": "DISABLED",
+                    }
                 }
             }
         )

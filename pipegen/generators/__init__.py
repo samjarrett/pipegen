@@ -1,3 +1,5 @@
+from pipegen.config import contains_codecommit_with_event
+
 from . import codebuild, codepipeline, iam, logs
 
 
@@ -30,7 +32,19 @@ def generate(config):
     )
     resources.update(definition)
 
-    definition, _ = codepipeline.pipeline(config, codepipeline_role_logical_name)
+    definition, codepipeline_logical_id = codepipeline.pipeline(
+        config, codepipeline_role_logical_name
+    )
     resources.update(definition)
+
+    if contains_codecommit_with_event(config):
+        definition, cloudwatch_event_role = iam.cloud_watch_event_role(
+            codepipeline_logical_id
+        )
+        resources.update(definition)
+        definition, _ = codepipeline.cloudwatch_events(
+            config, cloudwatch_event_role, codepipeline_logical_id
+        )
+        resources.update(definition)
 
     return resources
