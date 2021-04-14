@@ -59,22 +59,3 @@ def test_log_group_basic_config():
             },
         }
     }
-
-
-def test_log_group_no_kms():
-    """Tests log_group() when creating the group without KMS"""
-    config = configure_log_group(True, True, "my-log-group")
-    del config["config"]["kms_key_arn"]
-
-    resource_config = logs.log_group(config)
-    assert resource_config.logical_id == "LogGroup"
-    assert resource_config.definition == {
-        "LogGroup": {
-            "Type": "AWS::Logs::LogGroup",
-            "Properties": {
-                "KmsKeyId": {"Ref": "AWS::NoValue"},
-                "LogGroupName": "my-log-group",
-                "RetentionInDays": {"Ref": "AWS::NoValue"},
-            },
-        }
-    }

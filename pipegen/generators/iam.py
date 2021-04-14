@@ -1,5 +1,5 @@
 from copy import copy
-from typing import TYPE_CHECKING, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Iterable, List, Optional, Set, Union
 
 from pipegen.config import FnGetAtt, FnSub, Ref, get_ecr_arn, parse_value
 
@@ -104,11 +104,11 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
             [
                 parse_value(
                     "arn:aws:s3:::${BucketName}",
-                    BucketName=str(sub_config.get("s3_bucket", "")),
+                    BucketName=str(sub_config["s3_bucket"]),
                 ),
                 parse_value(
                     "arn:aws:s3:::${BucketName}/*",
-                    BucketName=str(sub_config.get("s3_bucket", "")),
+                    BucketName=str(sub_config["s3_bucket"]),
                 ),
             ],
         ),
@@ -117,7 +117,7 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
             [
                 parse_value(
                     "${KmsKeyArn}",
-                    KmsKeyArn=sub_config.get("kms_key_arn"),
+                    KmsKeyArn=sub_config["kms_key_arn"],
                 )
             ],
         ),
@@ -216,11 +216,10 @@ def codebuild_role(config) -> ResourceOutput:
             )
         )
 
-    default_image = sub_config.get("codebuild", {}).get("image")
     images = set()
     for stage in config.get("stages", []):
         for action in stage.get("actions", []):
-            images.add(action.get("image", default_image))
+            images.add(action["image"])
 
     image_arns = sorted(list(get_ecr_arns(list(images))))
     if image_arns:
@@ -241,11 +240,11 @@ def codebuild_role(config) -> ResourceOutput:
                 [
                     parse_value(
                         "arn:aws:s3:::${BucketName}",
-                        BucketName=sub_config.get("s3_bucket"),
+                        BucketName=sub_config["s3_bucket"],
                     ),
                     parse_value(
                         "arn:aws:s3:::${BucketName}/*",
-                        BucketName=sub_config.get("s3_bucket"),
+                        BucketName=sub_config["s3_bucket"],
                     ),
                 ],
             ),
@@ -254,7 +253,7 @@ def codebuild_role(config) -> ResourceOutput:
                 [
                     parse_value(
                         "${KmsKeyArn}",
-                        KmsKeyArn=sub_config.get("kms_key_arn"),
+                        KmsKeyArn=sub_config["kms_key_arn"],
                     )
                 ],
             ),

@@ -80,15 +80,15 @@ def codebuild_action_definition(action, source_names) -> dict:
     primary_source = source_names[0]
 
     return {
-        "Name": action.get("name"),
+        "Name": action["name"],
         "ActionTypeId": {
-            "Category": action.get("category"),
+            "Category": action["category"],
             "Owner": "AWS",
             "Provider": "CodeBuild",
             "Version": 1,
         },
         "Configuration": {
-            "ProjectName": {"Ref": generate_logical_id(action.get("name"))},
+            "ProjectName": {"Ref": generate_logical_id(action["name"])},
             "PrimarySource": sanitise_artifact_name(primary_source),
         },
         "InputArtifacts": [
@@ -110,13 +110,13 @@ def pipeline(config, role_logical_id: str) -> ResourceOutput:
     if not sources:
         raise KeyError("At least one source must be supplied")
 
-    source_names = [source.get("name") for source in sources]
+    source_names = [source["name"] for source in sources]
     if not all(sources):
         raise KeyError("All sources must have a name key + value")
 
     codebuild_stages = [
         {
-            "Name": stage.get("name"),
+            "Name": stage["name"],
             "Actions": [
                 codebuild_action_definition(action, source_names)
                 for action in stage.get("actions", [])
@@ -130,14 +130,12 @@ def pipeline(config, role_logical_id: str) -> ResourceOutput:
     resource_properties = {
         "ArtifactStore": {
             "EncryptionKey": {
-                "Id": parse_value(
-                    "${KmsKeyArn}", KmsKeyArn=sub_config.get("kms_key_arn")
-                ),
+                "Id": parse_value("${KmsKeyArn}", KmsKeyArn=sub_config["kms_key_arn"]),
                 "Type": "KMS",
             },
             "Location": parse_value(
                 "${BucketName}",
-                BucketName=sub_config.get("s3_bucket", ""),
+                BucketName=sub_config["s3_bucket"],
             ),
             "Type": "S3",
         },
@@ -198,9 +196,7 @@ def cloudwatch_events(
                         "event": ["referenceCreated", "referenceUpdated"],
                         "referenceType": ["branch"],
                         "referenceName": [
-                            parse_value(
-                                "${BranchName}", BranchName=source.get("branch")
-                            )
+                            parse_value("${BranchName}", BranchName=source["branch"])
                         ],
                     },
                 },

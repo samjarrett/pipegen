@@ -71,7 +71,7 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
             "Type": "CODEPIPELINE",
         },
         "EncryptionKey": parse_value(
-            "${KmsKeyArn}", KmsKeyArn=sub_config.get("kms_key_arn")
+            "${KmsKeyArn}", KmsKeyArn=sub_config["kms_key_arn"]
         ),
     }
 
