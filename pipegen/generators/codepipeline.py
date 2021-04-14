@@ -1,7 +1,7 @@
 import re
 from typing import Dict
 
-from pipegen.config import parse_value
+from pipegen.config import is_codecommit_with_event_source, parse_value
 
 from .codebuild import generate_logical_id
 from .interfaces import ResourceOutput
@@ -137,7 +137,7 @@ def cloudwatch_events(
     resources = {}
 
     for source in sources:
-        if source["from"] != "CodeCommit" or not source["event_for_source_changes"]:
+        if not is_codecommit_with_event_source(source):
             continue
 
         # Generate a CFN event

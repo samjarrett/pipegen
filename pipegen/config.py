@@ -47,9 +47,14 @@ def get_stage_action_field(stages, field: str) -> List:
 def contains_codecommit_with_event(config) -> bool:
     """Check if the sources have a CodeCommit repo with CloudWatch events for change detection"""
     for source in config.get("sources", []):
-        if source["from"] == "CodeCommit" and source["event_for_source_changes"]:
+        if is_codecommit_with_event_source(source):
             return True
     return False
+
+
+def is_codecommit_with_event_source(source: Dict) -> bool:
+    """Check if a source is a CodeCommit repo with CloudWatch events for change detection"""
+    return source["from"] == "CodeCommit" and source["event_for_source_changes"]
 
 
 def load_config(config: str, config_vars: Dict[str, str]) -> YAML:
