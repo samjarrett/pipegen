@@ -1,5 +1,5 @@
 import re
-from typing import Dict
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from pipegen.config import is_codecommit_with_event_source, parse_value
 
@@ -8,32 +8,71 @@ from .interfaces import ResourceOutput
 
 LOGICAL_ID = "CodePipeline"
 
+ARTIFACT_NAME_PATTERN = re.compile(r"[\W_]+")
 
-def source_action_definition(source: Dict[str, str]) -> dict:
+if TYPE_CHECKING:  # pragma: no cover
+    from typing_extensions import TypedDict
+
+    ActionTypeId = TypedDict(
+        "ActionTypeId",
+        {"Category": str, "Owner": str, "Provider": str, "Version": int},
+    )
+    OutputArtifact = TypedDict("OutputArtifact", {"Name": str})
+    SourceDefinition = TypedDict(
+        "SourceDefinition",
+        {
+            "Name": str,
+            "ActionTypeId": ActionTypeId,
+            "Configuration": Dict[str, Any],
+            "OutputArtifacts": List[OutputArtifact],
+        },
+    )
+else:
+    SourceDefinition = object
+
+
+def sanitise_artifact_name(name: str) -> str:
+    """Sanitise the input/output artifact name"""
+    return ARTIFACT_NAME_PATTERN.sub("", name)
+
+
+def source_action_definition(source: Dict[str, str]) -> SourceDefinition:
     """Get a Source's CodePipeline Action definition"""
-    source_from = source.get("from", "").lower()
-    if source_from == "codecommit":
-        return {
-            "Name": source.get("name"),
-            "ActionTypeId": {
-                "Category": "Source",
-                "Owner": "AWS",
-                "Provider": "CodeCommit",
-                "Version": 1,
-            },
-            "Configuration": {
-                "RepositoryName": parse_value(
-                    "${RepositoryName}", RepositoryName=source.get("repository")
-                ),
-                "BranchName": parse_value(
-                    "${BranchName}", BranchName=source.get("branch")
-                ),
-                "PollForSourceChanges": source.get("poll_for_source_changes"),
-            },
-            "OutputArtifacts": [{"Name": source.get("name")}],
-        }
+    definition: SourceDefinition = {
+        "Name": source["name"],
+        "ActionTypeId": {
+            "Category": "Source",
+            "Owner": "AWS",
+            "Provider": "CodeCommit",
+            "Version": 1,
+        },
+        "Configuration": {
+            "BranchName": parse_value("${BranchName}", BranchName=source["branch"]),
+        },
+        "OutputArtifacts": [{"Name": sanitise_artifact_name(source["name"])}],
+    }
 
-    raise NotImplementedError(f"Source type '{source_from}' is not supported yet")
+    repository = parse_value("${RepositoryName}", RepositoryName=source["repository"])
+
+    if source["from"] == "CodeCommit":
+        definition["Configuration"].update(
+            {
+                "RepositoryName": repository,
+                "PollForSourceChanges": source.get("poll_for_source_changes"),
+            }
+        )
+    if source["from"] == "CodeStarConnection":
+        definition["ActionTypeId"].update({"Provider": "CodeStarSourceConnection"})
+        definition["Configuration"].update(
+            {
+                "ConnectionArn": parse_value(
+                    "${ConnectionArn}", ConnectionArn=source.get("connection_arn")
+                ),
+                "FullRepositoryId": repository,
+            }
+        )
+
+    return definition
 
 
 def codebuild_action_definition(action, source_names) -> dict:
@@ -50,16 +89,16 @@ def codebuild_action_definition(action, source_names) -> dict:
         },
         "Configuration": {
             "ProjectName": {"Ref": generate_logical_id(action.get("name"))},
-            "PrimarySource": primary_source,
+            "PrimarySource": sanitise_artifact_name(primary_source),
         },
         "InputArtifacts": [
-            *[{"Name": source} for source in source_names],
+            *[{"Name": sanitise_artifact_name(source)} for source in source_names],
             *[
-                {"Name": input_artifact}
+                {"Name": sanitise_artifact_name(input_artifact)}
                 for input_artifact in action.get("input_artifacts", [])
             ],
         ],
-        "OutputArtifacts": [{"Name": action.get("name")}],
+        "OutputArtifacts": [{"Name": sanitise_artifact_name(action["name"])}],
     }
 
 

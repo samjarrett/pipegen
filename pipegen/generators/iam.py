@@ -132,18 +132,24 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
 
     # Add Source perms
     codecommit_projects: List[Union[str, FnSub, FnGetAtt, Ref]] = []
+    codestar_connection_arns: Set[str] = set()
     for source in config.get("sources", []):
-        source_from = source.get("from", "").lower()
-        if source_from == "codecommit":
+        if source["from"] == "CodeCommit":
             codecommit_projects.append(
                 parse_value(
                     "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${RepositoryName}",
-                    RepositoryName=source.get("repository"),
+                    RepositoryName=source["repository"],
                 )
             )
+        elif source["from"] == "CodeStarConnection":
+            if not source.get("connection_arn"):
+                raise RuntimeError(
+                    f"Source {source['name']} uses CodeStar Connections, but does not specify a connection_arn"
+                )
+            codestar_connection_arns.add(source.get("connection_arn"))
         else:
             raise NotImplementedError(
-                f"Source type '{source_from}' is not supported yet"
+                f"Source type '{source['from']}' is not supported yet"
             )
 
     if codecommit_projects:
@@ -157,6 +163,21 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
                     "codecommit:GitPull",
                 ],
                 codecommit_projects,
+            )
+        )
+    if codestar_connection_arns:
+        permissions.append(
+            iam_permission(
+                [
+                    "codestar-connections:UseConnection",
+                ],
+                [
+                    parse_value(
+                        "${ConnectionArn}",
+                        ConnectionArn=connection_arn,
+                    )
+                    for connection_arn in sorted(codestar_connection_arns)
+                ],
             )
         )
 
