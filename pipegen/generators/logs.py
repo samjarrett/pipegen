@@ -16,9 +16,7 @@ def log_group(config) -> Optional[ResourceOutput]:
         return None
 
     resource_properties = {
-        "KmsKeyId": parse_value(
-            "${KmsKeyArn}", KmsKeyArn=sub_config.get("kms_key_arn", "AWS::NoValue")
-        ),
+        "KmsKeyId": parse_value("${KmsKeyArn}", KmsKeyArn=sub_config["kms_key_arn"]),
         "LogGroupName": parse_value(
             "${LogGroupName}", LogGroupName=log_group_config.get("name")
         ),

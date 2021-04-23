@@ -1,5 +1,5 @@
 from copy import copy
-from typing import TYPE_CHECKING, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Iterable, List, Optional, Set, Union
 
 from pipegen.config import FnGetAtt, FnSub, Ref, get_ecr_arn, parse_value
 
@@ -104,11 +104,11 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
             [
                 parse_value(
                     "arn:aws:s3:::${BucketName}",
-                    BucketName=str(sub_config.get("s3_bucket", "")),
+                    BucketName=str(sub_config["s3_bucket"]),
                 ),
                 parse_value(
                     "arn:aws:s3:::${BucketName}/*",
-                    BucketName=str(sub_config.get("s3_bucket", "")),
+                    BucketName=str(sub_config["s3_bucket"]),
                 ),
             ],
         ),
@@ -117,7 +117,7 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
             [
                 parse_value(
                     "${KmsKeyArn}",
-                    KmsKeyArn=sub_config.get("kms_key_arn"),
+                    KmsKeyArn=sub_config["kms_key_arn"],
                 )
             ],
         ),
@@ -132,18 +132,24 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
 
     # Add Source perms
     codecommit_projects: List[Union[str, FnSub, FnGetAtt, Ref]] = []
+    codestar_connection_arns: Set[str] = set()
     for source in config.get("sources", []):
-        source_from = source.get("from", "").lower()
-        if source_from == "codecommit":
+        if source["from"] == "CodeCommit":
             codecommit_projects.append(
                 parse_value(
                     "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${RepositoryName}",
-                    RepositoryName=source.get("repository"),
+                    RepositoryName=source["repository"],
                 )
             )
+        elif source["from"] == "CodeStarConnection":
+            if not source.get("connection_arn"):
+                raise RuntimeError(
+                    f"Source {source['name']} uses CodeStar Connections, but does not specify a connection_arn"
+                )
+            codestar_connection_arns.add(source.get("connection_arn"))
         else:
             raise NotImplementedError(
-                f"Source type '{source_from}' is not supported yet"
+                f"Source type '{source['from']}' is not supported yet"
             )
 
     if codecommit_projects:
@@ -157,6 +163,21 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
                     "codecommit:GitPull",
                 ],
                 codecommit_projects,
+            )
+        )
+    if codestar_connection_arns:
+        permissions.append(
+            iam_permission(
+                [
+                    "codestar-connections:UseConnection",
+                ],
+                [
+                    parse_value(
+                        "${ConnectionArn}",
+                        ConnectionArn=connection_arn,
+                    )
+                    for connection_arn in sorted(codestar_connection_arns)
+                ],
             )
         )
 
@@ -195,11 +216,10 @@ def codebuild_role(config) -> ResourceOutput:
             )
         )
 
-    default_image = sub_config.get("codebuild", {}).get("image")
     images = set()
     for stage in config.get("stages", []):
         for action in stage.get("actions", []):
-            images.add(action.get("image", default_image))
+            images.add(action["image"])
 
     image_arns = sorted(list(get_ecr_arns(list(images))))
     if image_arns:
@@ -220,11 +240,11 @@ def codebuild_role(config) -> ResourceOutput:
                 [
                     parse_value(
                         "arn:aws:s3:::${BucketName}",
-                        BucketName=sub_config.get("s3_bucket"),
+                        BucketName=sub_config["s3_bucket"],
                     ),
                     parse_value(
                         "arn:aws:s3:::${BucketName}/*",
-                        BucketName=sub_config.get("s3_bucket"),
+                        BucketName=sub_config["s3_bucket"],
                     ),
                 ],
             ),
@@ -233,7 +253,7 @@ def codebuild_role(config) -> ResourceOutput:
                 [
                     parse_value(
                         "${KmsKeyArn}",
-                        KmsKeyArn=sub_config.get("kms_key_arn"),
+                        KmsKeyArn=sub_config["kms_key_arn"],
                     )
                 ],
             ),

@@ -9,6 +9,71 @@ from pipegen import config
 REPO_URI_PREFIX = "123456789012.dkr.ecr.my-region-1.amazonaws.com"
 
 
+def test_is_codecommit_with_event_source():
+    """Tests is_codecommit_with_event_source()"""
+    assert (
+        config.is_codecommit_with_event_source(
+            {"from": "CodeCommit", "event_for_source_changes": True}
+        )
+        is True
+    )
+
+    assert (
+        config.is_codecommit_with_event_source(
+            {"from": "SomethingElse", "event_for_source_changes": True}
+        )
+        is False
+    )
+    assert (
+        config.is_codecommit_with_event_source(
+            {"from": "CodeCommit", "event_for_source_changes": False}
+        )
+        is False
+    )
+
+
+def test_contains_codecommit_with_event():
+    """Tests contains_codecommit_with_event()"""
+    assert (
+        config.contains_codecommit_with_event(
+            {"sources": [{"from": "CodeCommit", "event_for_source_changes": True}]}
+        )
+        is True
+    )
+
+    # Test multiple sources with one valid one is True
+    assert (
+        config.contains_codecommit_with_event(
+            {
+                "sources": [
+                    {"from": "SomethingElse", "event_for_source_changes": True},
+                    {"from": "CodeCommit", "event_for_source_changes": True},
+                ]
+            }
+        )
+        is True
+    )
+
+    # False cases
+    assert (
+        config.contains_codecommit_with_event(
+            {"sources": [{"from": "SomethingElse", "event_for_source_changes": True}]}
+        )
+        is False
+    )
+    assert (
+        config.contains_codecommit_with_event(
+            {
+                "sources": [
+                    {"from": "SomethingElse", "event_for_source_changes": True},
+                    {"from": "CodeCommit", "event_for_source_changes": False},
+                ]
+            }
+        )
+        is False
+    )
+
+
 @patch("pipegen.config.generate_schema", return_value=Any())
 def test_load_config(patched_generate_schema):
     """Tests load_config()"""
