@@ -131,7 +131,8 @@ def generate_schema(
                                     Optional("provider", default="CodeBuild"): Enum(
                                         ["CodeBuild"]
                                     ),
-                                    "buildspec": Str(),
+                                    Optional("buildspec"): Str(),
+                                    Optional("commands"): Seq(Str()),
                                     Optional(
                                         "compute_type",
                                         default=default_compute_type,
