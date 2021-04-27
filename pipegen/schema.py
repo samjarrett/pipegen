@@ -133,6 +133,7 @@ def generate_schema(
                                     ),
                                     Optional("buildspec"): Str(),
                                     Optional("commands"): Seq(Str()),
+                                    Optional("artifacts"): Seq(Str()),
                                     Optional(
                                         "compute_type",
                                         default=default_compute_type,

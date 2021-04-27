@@ -36,6 +36,10 @@ def generate_source_config(project_config) -> Dict[str, Any]:
             "phases": {"build": {"commands": project_config["commands"]}},
         }
 
+        artifacts = project_config.get("artifacts")
+        if artifacts:
+            template.update({"artifacts": {"files": artifacts}})
+
         source["BuildSpec"] = convert_to_yaml(template)
 
     return source
