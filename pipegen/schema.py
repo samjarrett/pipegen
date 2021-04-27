@@ -20,7 +20,7 @@ CODEPIPELINE_DEFAULTS: Dict = {
 CODEBUILD_DEFAULTS: Dict = {
     "compute_type": "BUILD_GENERAL1_SMALL",
     "image": "aws/codebuild/amazonlinux2-x86_64-standard:3.0",
-    "log_group": {"enabled": False, "create": True},
+    "log_group": {"enabled": True, "create": True},
 }
 
 
@@ -28,11 +28,34 @@ def generate_schema(
     stage_actions: OptionalType[List[str]] = None,
     default_compute_type: OptionalType[str] = None,
     default_image: OptionalType[str] = None,
+    log_group_config: Dict = None,
 ) -> Map:
     """Generate a schema"""
     input_artifact_validator = Str()
     if stage_actions:
         input_artifact_validator = Enum(stage_actions)
+
+    name_validation_key = Optional("name")
+    if (
+        log_group_config
+        and log_group_config["enabled"]
+        and not log_group_config["create"]
+    ):
+        # name becomes mandatory if we're not creating it and it's enabled
+        name_validation_key = "name"
+
+    log_group_validator = {
+        Optional(
+            "enabled",
+            default=CODEBUILD_DEFAULTS["log_group"]["enabled"],
+        ): Bool(),
+        name_validation_key: Str(),
+        Optional(
+            "create",
+            default=CODEBUILD_DEFAULTS["log_group"]["create"],
+        ): Bool(),
+        Optional("retention"): Int(),
+    }
 
     return Map(
         {
@@ -63,24 +86,7 @@ def generate_schema(
                             Optional(
                                 "log_group",
                                 default=CODEBUILD_DEFAULTS["log_group"],
-                            ): Map(
-                                {
-                                    Optional(
-                                        "enabled",
-                                        default=CODEBUILD_DEFAULTS["log_group"][
-                                            "enabled"
-                                        ],
-                                    ): Bool(),
-                                    Optional("name"): Str(),
-                                    Optional(
-                                        "create",
-                                        default=CODEBUILD_DEFAULTS["log_group"][
-                                            "create"
-                                        ],
-                                    ): Bool(),
-                                    Optional("retention"): Int(),
-                                }
-                            ),
+                            ): Map(log_group_validator),
                         }
                     ),
                     Optional("iam", default=[]): EmptyList()

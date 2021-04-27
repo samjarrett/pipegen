@@ -1,5 +1,6 @@
 import re
 from functools import reduce
+from typing import Optional
 
 from pipegen.config import get_ecr_arn, parse_value
 
@@ -36,7 +37,12 @@ def is_ecr(image: str) -> bool:
         return False
 
 
-def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceOutput:
+def project(
+    project_config,
+    sub_config: dict,
+    role_logical_id: str,
+    log_group_logical_id: Optional[str] = None,
+) -> ResourceOutput:
     """Generate a CodeBuild project resource"""
     logical_id = generate_logical_id(project_config["name"])
 
@@ -77,13 +83,15 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
 
     log_group = sub_config.get("codebuild", {}).get("log_group", {})
     if log_group.get("enabled"):
+        log_group_name = parse_value("${GroupName}", GroupName=log_group.get("name"))
+        if log_group_logical_id:
+            log_group_name = {"Ref": log_group_logical_id}
+
         resource_properties.update(
             {
                 "LogsConfig": {
                     "CloudWatchLogs": {
-                        "GroupName": parse_value(
-                            "${GroupName}", GroupName=log_group.get("name")
-                        ),
+                        "GroupName": log_group_name,
                         "Status": "ENABLED",
                     }
                 }
