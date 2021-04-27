@@ -136,7 +136,7 @@ def test_parse_config():
         == "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
     )
     assert rendered_config["config"]["codebuild"]["log_group"] == {
-        "enabled": False,
+        "enabled": True,
         "create": True,
     }
 

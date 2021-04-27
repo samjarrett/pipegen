@@ -9,10 +9,14 @@ def generate(config):
     resources = {}
 
     log_group = logs.log_group(config)
+    log_group_logical_id = None
     if log_group:
         resources.update(log_group.definition)
+        log_group_logical_id = log_group.logical_id
 
-    definition, codebuild_role_logical_name = iam.codebuild_role(config)
+    definition, codebuild_role_logical_name = iam.codebuild_role(
+        config, log_group_logical_id
+    )
     resources.update(definition)
 
     codebuild_projects = codebuild.get_codebuild_projects(config)
@@ -22,6 +26,7 @@ def generate(config):
             codebuild_project,
             config.get("config", {}),
             codebuild_role_logical_name,
+            log_group_logical_id,
         )
 
         resources.update(definition)

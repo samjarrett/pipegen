@@ -1,11 +1,48 @@
 import re
 from functools import reduce
+from io import StringIO
+from typing import Any, Dict, Optional
+
+from ruamel.yaml import YAML
 
 from pipegen.config import get_ecr_arn, parse_value
 
 from .interfaces import ResourceOutput
 
 PROJECT_LOGICAL_ID_PATTERN = re.compile(r"[\W_]+")
+
+
+def convert_to_yaml(template) -> str:
+    """Convert a python variable to YAML"""
+    output = StringIO()
+    yaml = YAML()
+    yaml.indent(sequence=4, offset=2)
+    yaml.dump(template, output)
+    return output.getvalue()
+
+
+def generate_source_config(project_config) -> Dict[str, Any]:
+    """Generate a source config entry for a project config"""
+
+    source: Dict[str, Any] = {"Type": "CODEPIPELINE"}
+
+    if project_config.get("buildspec"):
+        source["BuildSpec"] = parse_value(
+            "${BuildSpec}", BuildSpec=project_config["buildspec"]
+        )
+    elif project_config.get("commands"):
+        template = {
+            "version": 0.2,
+            "phases": {"build": {"commands": project_config["commands"]}},
+        }
+
+        artifacts = project_config.get("artifacts")
+        if artifacts:
+            template.update({"artifacts": {"files": artifacts}})
+
+        source["BuildSpec"] = convert_to_yaml(template)
+
+    return source
 
 
 def generate_logical_id(name: str) -> str:
@@ -36,7 +73,12 @@ def is_ecr(image: str) -> bool:
         return False
 
 
-def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceOutput:
+def project(
+    project_config,
+    sub_config: dict,
+    role_logical_id: str,
+    log_group_logical_id: Optional[str] = None,
+) -> ResourceOutput:
     """Generate a CodeBuild project resource"""
     logical_id = generate_logical_id(project_config["name"])
 
@@ -64,12 +106,7 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
             "Type": "LINUX_CONTAINER",
         },
         "ServiceRole": {"Fn::GetAtt": [role_logical_id, "Arn"]},
-        "Source": {
-            "BuildSpec": parse_value(
-                "${BuildSpec}", BuildSpec=project_config["buildspec"]
-            ),
-            "Type": "CODEPIPELINE",
-        },
+        "Source": generate_source_config(project_config),
         "EncryptionKey": parse_value(
             "${KmsKeyArn}", KmsKeyArn=sub_config["kms_key_arn"]
         ),
@@ -77,13 +114,15 @@ def project(project_config, sub_config: dict, role_logical_id: str) -> ResourceO
 
     log_group = sub_config.get("codebuild", {}).get("log_group", {})
     if log_group.get("enabled"):
+        log_group_name = parse_value("${GroupName}", GroupName=log_group.get("name"))
+        if log_group_logical_id:
+            log_group_name = {"Ref": log_group_logical_id}
+
         resource_properties.update(
             {
                 "LogsConfig": {
                     "CloudWatchLogs": {
-                        "GroupName": parse_value(
-                            "${GroupName}", GroupName=log_group.get("name")
-                        ),
+                        "GroupName": log_group_name,
                         "Status": "ENABLED",
                     }
                 }

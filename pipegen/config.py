@@ -80,6 +80,7 @@ def parse_config(config: str, config_vars: Dict[str, str]) -> Dict[str, Any]:
             stage_actions=stage_actions,
             default_compute_type=default_compute_type,
             default_image=default_image,
+            log_group_config=data["config"]["codebuild"]["log_group"].data,
         )
     )
 

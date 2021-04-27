@@ -1,5 +1,6 @@
 from typing import Dict, List
 from typing import Optional as OptionalType
+from typing import Set
 
 from strictyaml import (
     Bool,
@@ -20,19 +21,56 @@ CODEPIPELINE_DEFAULTS: Dict = {
 CODEBUILD_DEFAULTS: Dict = {
     "compute_type": "BUILD_GENERAL1_SMALL",
     "image": "aws/codebuild/amazonlinux2-x86_64-standard:3.0",
-    "log_group": {"enabled": False, "create": True},
+    "log_group": {"enabled": True, "create": True},
 }
+
+
+class UniqueStr(Str):
+    """Ensure that a string has a unique value amongst invocations"""
+
+    def __init__(self):
+        self.existing_items: Set[str] = set()
+
+    def validate_scalar(self, chunk):
+        if chunk.contents in self.existing_items:
+            chunk.while_parsing_found("a set of strings", "duplicate found")
+
+        self.existing_items.add(chunk.contents)
+        return super().validate_scalar(chunk)
 
 
 def generate_schema(
     stage_actions: OptionalType[List[str]] = None,
     default_compute_type: OptionalType[str] = None,
     default_image: OptionalType[str] = None,
+    log_group_config: Dict = None,
 ) -> Map:
     """Generate a schema"""
     input_artifact_validator = Str()
     if stage_actions:
         input_artifact_validator = Enum(stage_actions)
+
+    name_validation_key = Optional("name")
+    if (
+        log_group_config
+        and log_group_config["enabled"]
+        and not log_group_config["create"]
+    ):
+        # name becomes mandatory if we're not creating it and it's enabled
+        name_validation_key = "name"
+
+    log_group_validator = {
+        Optional(
+            "enabled",
+            default=CODEBUILD_DEFAULTS["log_group"]["enabled"],
+        ): Bool(),
+        name_validation_key: Str(),
+        Optional(
+            "create",
+            default=CODEBUILD_DEFAULTS["log_group"]["create"],
+        ): Bool(),
+        Optional("retention"): Int(),
+    }
 
     return Map(
         {
@@ -63,24 +101,7 @@ def generate_schema(
                             Optional(
                                 "log_group",
                                 default=CODEBUILD_DEFAULTS["log_group"],
-                            ): Map(
-                                {
-                                    Optional(
-                                        "enabled",
-                                        default=CODEBUILD_DEFAULTS["log_group"][
-                                            "enabled"
-                                        ],
-                                    ): Bool(),
-                                    Optional("name"): Str(),
-                                    Optional(
-                                        "create",
-                                        default=CODEBUILD_DEFAULTS["log_group"][
-                                            "create"
-                                        ],
-                                    ): Bool(),
-                                    Optional("retention"): Int(),
-                                }
-                            ),
+                            ): Map(log_group_validator),
                         }
                     ),
                     Optional("iam", default=[]): EmptyList()
@@ -100,7 +121,7 @@ def generate_schema(
             "sources": Seq(
                 Map(
                     {
-                        "name": Str(),
+                        "name": UniqueStr(),
                         "from": Enum(["CodeCommit", "CodeStarConnection"]),
                         "repository": Str(),
                         "branch": Str(),
@@ -113,19 +134,21 @@ def generate_schema(
             "stages": Seq(
                 Map(
                     {
-                        "name": Str(),
+                        "name": UniqueStr(),
                         Optional("enabled", default=True): Bool(),
                         "actions": Seq(
                             Map(
                                 {
-                                    "name": Str(),
+                                    "name": UniqueStr(),
                                     Optional("category", default="Build"): Enum(
                                         ["Build", "Test", "Deploy"]
                                     ),
                                     Optional("provider", default="CodeBuild"): Enum(
                                         ["CodeBuild"]
                                     ),
-                                    "buildspec": Str(),
+                                    Optional("buildspec"): Str(),
+                                    Optional("commands"): Seq(Str()),
+                                    Optional("artifacts"): Seq(Str()),
                                     Optional(
                                         "compute_type",
                                         default=default_compute_type,

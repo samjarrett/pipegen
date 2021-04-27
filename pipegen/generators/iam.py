@@ -192,7 +192,9 @@ def codepipeline_role(config, codebuild_projects: List[str]) -> ResourceOutput:
     )
 
 
-def codebuild_role(config) -> ResourceOutput:
+def codebuild_role(
+    config, log_group_logical_id: Optional[str] = None
+) -> ResourceOutput:
     """Generate a CodeBuild role + policy resources"""
     sub_config = config.get("config", {})
     permissions = []
@@ -200,19 +202,17 @@ def codebuild_role(config) -> ResourceOutput:
     # Add CW Logs perms
     log_group = sub_config.get("codebuild", {}).get("log_group", {})
     if log_group.get("enabled"):
+        log_group_arn: Union[str, FnSub, Ref, FnGetAtt] = parse_value(
+            "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroupName}:*",
+            LogGroupName=log_group.get("name"),
+        )
+        if log_group_logical_id:
+            log_group_arn = {"Fn::GetAtt": [log_group_logical_id, "Arn"]}
+
         permissions.append(
             iam_permission(
                 ["logs:CreateLogStream", "logs:PutLogEvents"],
-                [
-                    parse_value(
-                        "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroupName}",
-                        LogGroupName=log_group.get("name", ""),
-                    ),
-                    parse_value(
-                        "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroupName}:log-stream:*",
-                        LogGroupName=log_group.get("name", ""),
-                    ),
-                ],
+                [log_group_arn],
             )
         )
 
