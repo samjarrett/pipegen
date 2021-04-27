@@ -1,5 +1,6 @@
 from typing import Dict, List
 from typing import Optional as OptionalType
+from typing import Set
 
 from strictyaml import (
     Bool,
@@ -22,6 +23,20 @@ CODEBUILD_DEFAULTS: Dict = {
     "image": "aws/codebuild/amazonlinux2-x86_64-standard:3.0",
     "log_group": {"enabled": True, "create": True},
 }
+
+
+class UniqueStr(Str):
+    """Ensure that a string has a unique value amongst invocations"""
+
+    def __init__(self):
+        self.existing_items: Set[str] = set()
+
+    def validate_scalar(self, chunk):
+        if chunk.contents in self.existing_items:
+            chunk.while_parsing_found("a set of strings", "duplicate found")
+
+        self.existing_items.add(chunk.contents)
+        return super().validate_scalar(chunk)
 
 
 def generate_schema(
@@ -106,7 +121,7 @@ def generate_schema(
             "sources": Seq(
                 Map(
                     {
-                        "name": Str(),
+                        "name": UniqueStr(),
                         "from": Enum(["CodeCommit", "CodeStarConnection"]),
                         "repository": Str(),
                         "branch": Str(),
@@ -119,12 +134,12 @@ def generate_schema(
             "stages": Seq(
                 Map(
                     {
-                        "name": Str(),
+                        "name": UniqueStr(),
                         Optional("enabled", default=True): Bool(),
                         "actions": Seq(
                             Map(
                                 {
-                                    "name": Str(),
+                                    "name": UniqueStr(),
                                     Optional("category", default="Build"): Enum(
                                         ["Build", "Test", "Deploy"]
                                     ),
