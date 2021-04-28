@@ -18,7 +18,7 @@ def convert_to_yaml(template) -> str:
     yaml = YAML()
     yaml.indent(sequence=4, offset=2)
     yaml.dump(template, output)
-    return output.getvalue()
+    return output.getvalue().strip()
 
 
 def generate_source_config(project_config) -> Dict[str, Any]:
