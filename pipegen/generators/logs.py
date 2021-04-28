@@ -17,13 +17,18 @@ def log_group(config) -> Optional[ResourceOutput]:
 
     resource_properties = {
         "KmsKeyId": parse_value("${KmsKeyArn}", KmsKeyArn=sub_config["kms_key_arn"]),
-        "LogGroupName": parse_value(
-            "${LogGroupName}", LogGroupName=log_group_config.get("name", "AWS::NoValue")
-        ),
-        "RetentionInDays": parse_value(
-            "${Retention}", Retention=log_group_config.get("retention", "AWS::NoValue")
-        ),
     }
+
+    name = log_group_config.get("name")
+    if name:
+        resource_properties["LogGroupName"] = parse_value(
+            "${LogGroupName}", LogGroupName=name
+        )
+    retention = log_group_config.get("retention")
+    if retention:
+        resource_properties["RetentionInDays"] = parse_value(
+            "${Retention}", Retention=retention
+        )
 
     return ResourceOutput(
         definition={
