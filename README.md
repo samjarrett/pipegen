@@ -76,6 +76,28 @@ config:
        Use if your CodeBuild projects need to manipulate AWS resources
 ```
 
+#### IAM Examples
+
+By default, `pipegen` configures CodeBuild with the minimal amount of permissions in order to run, decrypt your artifacts from KMS, pull images from ECR (if configured), write logs to CloudWatch logs (if configured).  If you require additional IAM permissions, you can specify them using the following syntax:
+
+```yaml
+config:
+  iam:
+    - standard IAM statement
+```
+
+For example, adding permissions to upload files to S3 in your build:
+
+```yaml
+config:
+  iam:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+      Resource: 
+        - my-bucket-name/*
+```
+
 ### Source configuration
 
 Source configuration defines where your project's code comes from. 
