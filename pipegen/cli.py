@@ -26,7 +26,7 @@ def dump_yaml(template, output=sys.stdout):
 
 
 @click.group()
-def cli():
+def cli():  # pragma: no cover
     """pipegen: CodePipeline/CodeBuild stack generator"""
     logging.basicConfig(
         datefmt="%Y-%m-%d %H:%M", format="[%(asctime)s] %(levelname)-2s: %(message)s"
@@ -74,5 +74,5 @@ def dump_template(config_file: TextIOWrapper, var_overrides: Dict[str, str]):
     dump_yaml({"Resources": generate(config)})
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     cli()
