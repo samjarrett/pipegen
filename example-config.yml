@@ -1,34 +1,21 @@
 ---
 config:
-  s3_bucket: {{vars.PipelineBucket}}
-  kms_key_arn: {{vars.KmsKey}}
+  s3_bucket: my-bucket
+  kms_key_arn: arn:aws:kms:ap-southeast-2:123456789012:key/12309128-23123123-12312312
 
-  codepipeline:
-    restart_execution_on_update: false
-
-  codebuild:
-    compute_type: BUILD_GENERAL1_SMALL
-    image: {{vars.CodeBuildImage}}
-  
+  codebuild:  
     log_group: 
       enabled: true
-      name: import:CodeBuildCloudWatchLogGroup
       create: true
+      name: import:CloudWatchLogGroup
       retention: 7 # days
 
-  # iam:
-  #   - Effect: Allow
-  #     Action:
-  #       - s3:PutObject
-  #     Resource: 
-  #       - {{vars.S3BucketArn}}
-  #       - {{vars.S3BucketArn}}/*
-  #   - Effect: Allow
-  #     Action:
-  #       - s3:GetObject
-  #     Resource: 
-  #       - {{vars.S3BucketArn}}
-  #       - {{vars.S3BucketArn}}/*
+  iam:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+      Resource: 
+        - arn:aws:s3:::my-bucket/*
 
 sources:
   - name: Source
@@ -52,16 +39,14 @@ stages:
         image: another-image
         environment:
           # all actions will get AWS_DEFAULT_REGION/AWS_REGION set to the current region as well
-          MY_VAR: {{vars.MyVar}}
+          MY_VAR: MyValue
 
   - name: DevDeploy
     actions:
       - name: Deploy
         provider: CodeBuild
-        buildspec: buildspecs/deploy.yml
-        environment:
-          MY_VAR: {{vars.MyVar}}
-          ANOTHER_VAR: import:CodeBuildCloudWatchLogGroup
+        commands:
+          - make deploy env=dev
         input_artifacts:
           # all actions will get the sources as input artifacts as well
           - Build
@@ -71,9 +56,7 @@ stages:
     actions:
       - name: ProdDeploy
         provider: CodeBuild
-        image: 123456789012.dkr.ecr.ap-southeast-2.amazonaws.com/my-codebuild-image:latest
-        buildspec: buildspecs/deploy.yml
-        environment:
-          MY_VAR: {{vars.MyVar}}
+        commands:
+          - make deploy env=prod
         input_artifacts:
           - Build

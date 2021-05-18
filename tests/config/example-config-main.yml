@@ -1,0 +1,71 @@
+config:
+  codepipeline:
+    restart_execution_on_update: false
+  s3_bucket: my-bucket
+  kms_key_arn: arn:aws:kms:ap-southeast-2:123456789012:key/12309128-23123123-12312312
+  codebuild:
+    compute_type: BUILD_GENERAL1_SMALL
+    image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+    log_group:
+      enabled: true
+      create: true
+      name: import:CloudWatchLogGroup
+      retention: 7
+  iam:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+      Resource:
+        - arn:aws:s3:::my-bucket/*
+sources:
+  - poll_for_source_changes: false
+    event_for_source_changes: true
+    name: Source
+    from: CodeCommit
+    repository: my-repo
+    branch: main
+  - poll_for_source_changes: false
+    event_for_source_changes: true
+    name: MySharedLib
+    from: CodeCommit
+    repository: my-shared-lib
+    branch: main
+stages:
+  - enabled: true
+    name: Build
+    actions:
+      - category: Build
+        input_artifacts: []
+        name: Build
+        provider: CodeBuild
+        buildspec: buildspecs/build.yml
+        compute_type: BUILD_GENERAL1_MEDIUM
+        image: another-image
+        environment:
+          MY_VAR: MyValue
+  - enabled: true
+    name: DevDeploy
+    actions:
+      - category: Build
+        environment: {}
+        name: Deploy
+        provider: CodeBuild
+        commands:
+          - make deploy env=dev
+        input_artifacts:
+          - Build
+        compute_type: BUILD_GENERAL1_SMALL
+        image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+  - name: ProdDeploy
+    enabled: true
+    actions:
+      - category: Build
+        environment: {}
+        name: ProdDeploy
+        provider: CodeBuild
+        commands:
+          - make deploy env=prod
+        input_artifacts:
+          - Build
+        compute_type: BUILD_GENERAL1_SMALL
+        image: aws/codebuild/amazonlinux2-x86_64-standard:3.0

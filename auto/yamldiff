@@ -1,0 +1,17 @@
+#!/bin/bash -eu
+set -o pipefail
+
+TMPFILE=$(mktemp)
+
+yamldiff --file1 "$1" --file2 "$2" > "${TMPFILE}"
+
+LINECOUNT="$(cat "${TMPFILE}" | wc -l)"
+if [ ${LINECOUNT} -gt 1 ]; then
+    echo "A difference in configurations was detected:"
+    cat "${TMPFILE}"
+    echo "-------  Source  -------"
+    cat "$1"
+    echo "------- Generated -------"
+    cat "$2"
+    exit 1
+fi

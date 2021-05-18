@@ -21,12 +21,31 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r dev-requirements.txt
+      
+      - name: Install yamldiff
+        run: |
+          curl -Lo yamldiff https://github.com/sahilm/yamldiff/releases/download/0.1.0/yamldiff-v0.1.0-linux-amd64
+          chmod +x yamldiff
+          sudo mv yamldiff /usr/bin/yamldiff
 
       - name: Run lint
         run: make lint
 
       - name: Run tests
         run: make test
+
+      - name: Install pipegen
+        run: pip install .
+
+      - name: yamldiff main branch
+        run: |
+          pipegen dump config --config example-config.yml --var BranchName=main > config-main.yml
+          auto/yamldiff tests/config/example-config-main.yml config-main.yml
+      
+      - name: yamldiff feature branch
+        run: |
+          pipegen dump config --config example-config.yml --var BranchName=feature > config-feature.yml
+          auto/yamldiff tests/config/example-config-feature.yml config-feature.yml
 
   publish:
     needs: test
