@@ -25,7 +25,7 @@ botocore==1.20.78
     #   s3transfer
 cfn-sync==0.0.9
     # via -r requirements.txt
-click==8.0.0
+click==8.0.1
     # via
     #   -r requirements.txt
     #   black
