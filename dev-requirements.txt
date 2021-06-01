@@ -89,7 +89,7 @@ ruamel.yaml.clib==0.2.2
     # via
     #   -r requirements.txt
     #   ruamel.yaml
-ruamel.yaml==0.17.2
+ruamel.yaml==0.17.4
     # via
     #   -r requirements.txt
     #   strictyaml
@@ -101,7 +101,7 @@ six==1.15.0
     # via
     #   -r requirements.txt
     #   python-dateutil
-strictyaml==1.4.0
+strictyaml==1.4.2
     # via -r requirements.txt
 toml==0.10.2
     # via
