@@ -30,13 +30,13 @@ python-dateutil==2.8.1
     #   strictyaml
 ruamel.yaml.clib==0.2.2
     # via ruamel.yaml
-ruamel.yaml==0.17.2
+ruamel.yaml==0.17.4
     # via strictyaml
 s3transfer==0.4.2
     # via boto3
 six==1.15.0
     # via python-dateutil
-strictyaml==1.4.0
+strictyaml==1.4.2
     # via -r requirements.in
 urllib3==1.26.4
     # via botocore
