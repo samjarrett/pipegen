@@ -12,7 +12,7 @@ attrs==20.3.0
     # via pytest
 black==21.5b2
     # via -r dev-requirements.in
-boto3-stubs[cloudformation]==1.17.84
+boto3-stubs[cloudformation]==1.17.88.post1
     # via -r dev-requirements.in
 boto3==1.17.84
     # via
@@ -52,7 +52,7 @@ markupsafe==2.0.0
     #   jinja2
 mccabe==0.6.1
     # via pylint
-mypy-boto3-cloudformation==1.17.84
+mypy-boto3-cloudformation==1.17.88.post1
     # via boto3-stubs
 mypy-extensions==0.4.3
     # via
