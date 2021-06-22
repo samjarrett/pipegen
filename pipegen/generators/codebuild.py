@@ -3,7 +3,7 @@ from functools import reduce
 from io import StringIO
 from typing import Any, Dict, Optional
 
-from ruamel.yaml import YAML
+from strictyaml.ruamel import YAML
 
 from pipegen.config import get_ecr_arn, parse_value
 

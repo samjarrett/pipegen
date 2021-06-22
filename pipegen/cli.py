@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Dict
 import boto3
 import click
 from cfn_sync import Stack
-from ruamel.yaml import YAML
+from strictyaml.ruamel import YAML
 
 from .args import CONFIG_OPTION, VARS_OPTION
 from .config import parse_config
