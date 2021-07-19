@@ -12,19 +12,19 @@ attrs==20.3.0
     # via pytest
 black==21.7b0
     # via -r dev-requirements.in
+boto3-stubs[cloudformation]==1.18.1
+    # via -r dev-requirements.in
 boto3==1.18.1
     # via
     #   -r requirements.txt
     #   cfn-sync
-boto3-stubs[cloudformation]==1.18.1
-    # via -r dev-requirements.in
+botocore-stubs==1.20.94
+    # via boto3-stubs
 botocore==1.21.1
     # via
     #   -r requirements.txt
     #   boto3
     #   s3transfer
-botocore-stubs==1.20.94
-    # via boto3-stubs
 cfn-sync==0.0.10
     # via -r requirements.txt
 click==8.0.1
@@ -54,14 +54,14 @@ markupsafe==2.0.0
     #   jinja2
 mccabe==0.6.1
     # via pylint
-mypy==0.910
-    # via -r dev-requirements.in
 mypy-boto3-cloudformation==1.18.0
     # via boto3-stubs
 mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
+mypy==0.910
+    # via -r dev-requirements.in
 packaging==20.9
     # via pytest
 pathspec==0.8.1
@@ -74,12 +74,12 @@ pylint==2.9.3
     # via -r dev-requirements.in
 pyparsing==2.4.7
     # via packaging
+pytest-cov==2.12.1
+    # via -r dev-requirements.in
 pytest==6.2.4
     # via
     #   -r dev-requirements.in
     #   pytest-cov
-pytest-cov==2.12.1
-    # via -r dev-requirements.in
 python-dateutil==2.8.1
     # via
     #   -r requirements.txt
@@ -106,9 +106,7 @@ toml==0.10.2
 tomli==1.0.4
     # via black
 typing-extensions==3.10.0.0
-    # via
-    #   -r dev-requirements.in
-    #   mypy
+    # via mypy
 urllib3==1.26.4
     # via
     #   -r requirements.txt

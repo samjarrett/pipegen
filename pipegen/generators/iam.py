@@ -1,14 +1,9 @@
 from copy import copy
-from typing import TYPE_CHECKING, Iterable, List, Optional, Set, Union
+from typing import Iterable, List, Optional, Set, TypedDict, Union
 
 from pipegen.config import FnGetAtt, FnSub, Ref, get_ecr_arn, parse_value
 
 from .interfaces import ResourceOutput
-
-if TYPE_CHECKING:  # pragma: no cover
-    from typing_extensions import TypedDict
-else:
-    TypedDict = object
 
 S3_BUCKET_PERMISSIONS = [
     "s3:GetObject*",

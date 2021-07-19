@@ -1,32 +1,24 @@
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, TypedDict, Union
 
 from jinja2 import Environment, StrictUndefined
 from strictyaml import YAML, load
 
 from .schema import generate_schema
 
-if TYPE_CHECKING:  # pragma: no cover
-    from typing_extensions import TypedDict
-
-    # {"Ref": key}
-    Ref = TypedDict("Ref", {"Ref": str})
-    # {"Fn::GetAtt": [resource, key]}
-    FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": List[str]})
-    # {"Fn::ImportValue": key}
-    FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
-    # { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
-    # OR:
-    # { "Fn::Sub" : String }
-    FnSub = TypedDict(
-        "FnSub",
-        {"Fn::Sub": Union[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]},
-    )
-else:
-    Ref = object
-    FnGetAtt = object
-    FnImportValue = object
-    FnSub = object
+# {"Ref": key}
+Ref = TypedDict("Ref", {"Ref": str})
+# {"Fn::GetAtt": [resource, key]}
+FnGetAtt = TypedDict("FnGetAtt", {"Fn::GetAtt": List[str]})
+# {"Fn::ImportValue": key}
+FnImportValue = TypedDict("FnImportValue", {"Fn::ImportValue": str})
+# { "Fn::Sub" : [ String, { Var1Name: Var1Value, Var2Name: Var2Value } ] }
+# OR:
+# { "Fn::Sub" : String }
+FnSub = TypedDict(
+    "FnSub",
+    {"Fn::Sub": Union[str, Tuple[str, Dict[str, Union[str, Dict[str, str]]]]]},
+)
 
 REPO_REGEX = (
     r"(?P<account>[\d]{12}).dkr.ecr.(?P<region>[a-z]{2}-[a-z]+-[\d]+)."

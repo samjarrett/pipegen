@@ -1,5 +1,5 @@
 import re
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List, TypedDict
 
 from pipegen.config import is_codecommit_with_event_source, parse_value
 
@@ -10,25 +10,21 @@ LOGICAL_ID = "CodePipeline"
 
 ARTIFACT_NAME_PATTERN = re.compile(r"[\W_]+")
 
-if TYPE_CHECKING:  # pragma: no cover
-    from typing_extensions import TypedDict
 
-    ActionTypeId = TypedDict(
-        "ActionTypeId",
-        {"Category": str, "Owner": str, "Provider": str, "Version": int},
-    )
-    OutputArtifact = TypedDict("OutputArtifact", {"Name": str})
-    SourceDefinition = TypedDict(
-        "SourceDefinition",
-        {
-            "Name": str,
-            "ActionTypeId": ActionTypeId,
-            "Configuration": Dict[str, Any],
-            "OutputArtifacts": List[OutputArtifact],
-        },
-    )
-else:
-    SourceDefinition = object
+ActionTypeId = TypedDict(
+    "ActionTypeId",
+    {"Category": str, "Owner": str, "Provider": str, "Version": int},
+)
+OutputArtifact = TypedDict("OutputArtifact", {"Name": str})
+SourceDefinition = TypedDict(
+    "SourceDefinition",
+    {
+        "Name": str,
+        "ActionTypeId": ActionTypeId,
+        "Configuration": Dict[str, Any],
+        "OutputArtifacts": List[OutputArtifact],
+    },
+)
 
 
 def sanitise_artifact_name(name: str) -> str:
