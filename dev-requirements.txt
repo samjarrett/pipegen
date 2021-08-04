@@ -16,7 +16,7 @@ boto3==1.18.12
     # via
     #   -r requirements.txt
     #   cfn-sync
-boto3-stubs[cloudformation]==1.18.12
+boto3-stubs[cloudformation]==1.18.13
     # via -r dev-requirements.in
 botocore==1.21.12
     # via
