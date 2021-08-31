@@ -107,7 +107,7 @@ toml==0.10.2
     #   pytest-cov
 tomli==1.0.4
     # via black
-typing-extensions==3.10.0.1
+typing-extensions==3.10.0.2
     # via
     #   -r dev-requirements.in
     #   black
