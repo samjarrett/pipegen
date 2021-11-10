@@ -16,7 +16,7 @@ cfn-sync==0.0.10
     # via -r requirements.in
 click==8.0.3
     # via -r requirements.in
-jinja2==3.0.2
+jinja2==3.0.3
     # via -r requirements.in
 jmespath==0.10.0
     # via
