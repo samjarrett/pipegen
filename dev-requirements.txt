@@ -8,7 +8,7 @@ astroid==2.9.0
     # via pylint
 attrs==20.3.0
     # via pytest
-black==21.12b0
+black==22.1.0
     # via -r dev-requirements.in
 boto3==1.20.45
     # via
@@ -109,7 +109,6 @@ tomli==1.2.3
 typing-extensions==4.0.1
     # via
     #   -r dev-requirements.in
-    #   black
     #   mypy
 urllib3==1.26.4
     # via
