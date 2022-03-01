@@ -9,3 +9,4 @@ black
 
 boto3-stubs[cloudformation]
 typing-extensions
+types-setuptools

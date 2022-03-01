@@ -8,6 +8,7 @@ import click
 from cfn_sync import Stack
 from strictyaml.ruamel import YAML
 
+from . import VERSION
 from .args import CONFIG_OPTION, VARS_OPTION
 from .config import parse_config
 from .generators import generate
@@ -25,7 +26,19 @@ def dump_yaml(template, output=sys.stdout):
     yaml.dump(template, output)
 
 
+def print_version(ctx, _, value):
+    """Output the version of pipegen"""
+    if not value or ctx.resilient_parsing:
+        return
+
+    click.echo(VERSION)
+    ctx.exit()
+
+
 @click.group()
+@click.option(
+    "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
+)
 def cli():
     """pipegen: CodePipeline/CodeBuild stack generator"""
     logging.basicConfig(
