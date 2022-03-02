@@ -14,7 +14,7 @@ boto3==1.21.9
     # via
     #   -r requirements.txt
     #   cfn-sync
-boto3-stubs[cloudformation]==1.21.9
+boto3-stubs[cloudformation]==1.21.10
     # via -r dev-requirements.in
 botocore==1.24.9
     # via
@@ -111,10 +111,7 @@ types-setuptools==57.4.9
 typing-extensions==4.1.1
     # via
     #   -r dev-requirements.in
-    #   astroid
-    #   black
     #   mypy
-    #   pylint
 urllib3==1.26.4
     # via
     #   -r requirements.txt
