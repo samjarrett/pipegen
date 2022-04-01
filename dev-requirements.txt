@@ -25,7 +25,7 @@ botocore-stubs==1.20.94
     # via boto3-stubs
 cfn-sync==0.0.10
     # via -r requirements.txt
-click==8.1.1
+click==8.1.2
     # via
     #   -r requirements.txt
     #   black
