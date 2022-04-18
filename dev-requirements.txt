@@ -109,7 +109,7 @@ tomli==1.2.3
     #   pytest
 types-setuptools==57.4.14
     # via -r dev-requirements.in
-typing-extensions==4.1.1
+typing-extensions==4.2.0
     # via
     #   -r dev-requirements.in
     #   boto3-stubs
