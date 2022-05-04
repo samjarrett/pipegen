@@ -1,6 +1,7 @@
 name: Enable automerge
 
-on: [pull_request_target]
+on: 
+  pull_request_target: ~
 
 jobs:
   automerge:
@@ -8,6 +9,7 @@ jobs:
     if: ${{ github.actor == 'dependabot[bot]' }}
 
     permissions:
+      contents: 'write'
       pull-requests: 'write'
 
     steps:
