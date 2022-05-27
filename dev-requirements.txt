@@ -107,7 +107,7 @@ tomli==1.2.3
     #   mypy
     #   pylint
     #   pytest
-types-setuptools==57.4.16
+types-setuptools==57.4.17
     # via -r dev-requirements.in
 typing-extensions==4.2.0
     # via
