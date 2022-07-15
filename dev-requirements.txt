@@ -14,7 +14,7 @@ boto3==1.24.30
     # via
     #   -r requirements.txt
     #   cfn-sync
-boto3-stubs[cloudformation]==1.24.29
+boto3-stubs[cloudformation]==1.24.30
     # via -r dev-requirements.in
 botocore==1.27.30
     # via
@@ -109,6 +109,8 @@ tomli==1.2.3
     #   pytest
 tomlkit==0.11.0
     # via pylint
+types-s3transfer==0.6.0
+    # via boto3-stubs
 types-setuptools==63.2.0
     # via -r dev-requirements.in
 typing-extensions==4.3.0
