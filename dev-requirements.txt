@@ -54,7 +54,7 @@ markupsafe==2.0.0
     #   jinja2
 mccabe==0.6.1
     # via pylint
-mypy==0.961
+mypy==0.971
     # via -r dev-requirements.in
 mypy-boto3-cloudformation==1.24.0
     # via boto3-stubs
