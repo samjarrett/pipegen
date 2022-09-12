@@ -12,7 +12,7 @@ botocore==1.27.30
     # via
     #   boto3
     #   s3transfer
-cfn-sync==0.0.10
+cfn-sync==0.0.11
     # via -r requirements.in
 click==8.1.3
     # via -r requirements.in
