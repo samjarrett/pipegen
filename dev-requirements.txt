@@ -33,8 +33,6 @@ coverage[toml]==5.5
     # via pytest-cov
 dill==0.3.4
     # via pylint
-exceptiongroup==1.0.0rc9
-    # via pytest
 iniconfig==1.1.1
     # via pytest
 isort==5.10.1
@@ -56,7 +54,7 @@ markupsafe==2.0.0
     #   jinja2
 mccabe==0.6.1
     # via pylint
-mypy==0.982
+mypy==0.990
     # via -r dev-requirements.in
 mypy-boto3-cloudformation==1.24.0
     # via boto3-stubs
@@ -101,12 +99,6 @@ strictyaml==1.6.2
     # via -r requirements.txt
 toml==0.10.2
     # via coverage
-tomli==1.2.3
-    # via
-    #   black
-    #   mypy
-    #   pylint
-    #   pytest
 tomlkit==0.11.0
     # via pylint
 types-s3transfer==0.6.0
