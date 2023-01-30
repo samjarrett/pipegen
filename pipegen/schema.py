@@ -43,7 +43,7 @@ def generate_schema(
     stage_actions: OptionalType[List[str]] = None,
     default_compute_type: OptionalType[str] = None,
     default_image: OptionalType[str] = None,
-    log_group_config: Dict = None,
+    log_group_config: OptionalType[Dict] = None,
 ) -> Map:
     """Generate a schema"""
     input_artifact_validator = Str()
