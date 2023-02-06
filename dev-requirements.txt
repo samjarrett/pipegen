@@ -105,7 +105,7 @@ types-docutils==0.19.1.1
     # via types-setuptools
 types-s3transfer==0.6.0
     # via boto3-stubs
-types-setuptools==65.7.0.4
+types-setuptools==67.1.0.0
     # via -r dev-requirements.in
 typing-extensions==4.4.0
     # via
