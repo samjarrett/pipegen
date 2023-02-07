@@ -78,7 +78,10 @@ def generate_schema(
                 {
                     "s3_bucket": Str(),
                     "kms_key_arn": Str(),
-                    Optional("codepipeline", default=CODEPIPELINE_DEFAULTS,): Map(
+                    Optional(
+                        "codepipeline",
+                        default=CODEPIPELINE_DEFAULTS,
+                    ): Map(
                         {
                             Optional(
                                 "restart_execution_on_update",
