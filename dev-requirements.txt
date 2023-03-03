@@ -14,7 +14,7 @@ boto3==1.26.83
     # via
     #   -r requirements.txt
     #   cfn-sync
-boto3-stubs[cloudformation]==1.24.96
+boto3-stubs[cloudformation]==1.26.83
     # via -r dev-requirements.in
 botocore==1.29.83
     # via
@@ -56,7 +56,7 @@ mccabe==0.6.1
     # via pylint
 mypy==1.0.1
     # via -r dev-requirements.in
-mypy-boto3-cloudformation==1.24.0
+mypy-boto3-cloudformation==1.26.60
     # via boto3-stubs
 mypy-extensions==0.4.3
     # via
