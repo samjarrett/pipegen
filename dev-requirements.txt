@@ -95,7 +95,7 @@ six==1.15.0
     # via
     #   -r requirements.txt
     #   python-dateutil
-strictyaml==1.6.2
+strictyaml==1.7.3
     # via -r requirements.txt
 toml==0.10.2
     # via coverage
