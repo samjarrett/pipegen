@@ -103,7 +103,7 @@ types-s3transfer==0.6.0
     # via boto3-stubs
 types-setuptools==67.8.0.0
     # via -r dev-requirements.in
-typing-extensions==4.5.0
+typing-extensions==4.6.0
     # via
     #   -r dev-requirements.in
     #   mypy
