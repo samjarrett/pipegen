@@ -4,11 +4,11 @@
 #
 #    pip-compile
 #
-boto3==1.26.140
+boto3==1.26.141
     # via
     #   -r requirements.in
     #   cfn-sync
-botocore==1.29.140
+botocore==1.29.141
     # via
     #   boto3
     #   s3transfer
