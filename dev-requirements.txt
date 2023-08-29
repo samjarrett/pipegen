@@ -12,7 +12,7 @@ boto3==1.28.34
     # via
     #   -r requirements.txt
     #   cfn-sync
-boto3-stubs[cloudformation]==1.28.35
+boto3-stubs[cloudformation]==1.28.36
     # via -r dev-requirements.in
 botocore==1.31.34
     # via
@@ -106,6 +106,7 @@ types-setuptools==68.1.0.0
 typing-extensions==4.7.1
     # via
     #   -r dev-requirements.in
+    #   boto3-stubs
     #   mypy
 urllib3==1.26.4
     # via
