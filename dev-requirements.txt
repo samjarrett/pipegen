@@ -103,7 +103,7 @@ types-s3transfer==0.6.0
     # via boto3-stubs
 types-setuptools==68.2.0.0
     # via -r dev-requirements.in
-typing-extensions==4.7.1
+typing-extensions==4.8.0
     # via
     #   -r dev-requirements.in
     #   boto3-stubs
