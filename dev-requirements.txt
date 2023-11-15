@@ -12,8 +12,10 @@ boto3==1.29.0
     # via
     #   -r requirements.txt
     #   cfn-sync
-boto3-stubs[cloudformation]==1.28.85
-    # via -r dev-requirements.in
+boto3-stubs[cloudformation]==1.29.0
+    # via
+    #   -r dev-requirements.in
+    #   boto3-stubs
 botocore==1.32.0
     # via
     #   -r requirements.txt
@@ -56,7 +58,7 @@ mccabe==0.6.1
     # via pylint
 mypy==1.7.0
     # via -r dev-requirements.in
-mypy-boto3-cloudformation==1.28.0
+mypy-boto3-cloudformation==1.29.0
     # via boto3-stubs
 mypy-extensions==1.0.0
     # via
@@ -118,6 +120,7 @@ typing-extensions==4.8.0
     #   black
     #   boto3-stubs
     #   mypy
+    #   mypy-boto3-cloudformation
     #   pylint
 urllib3==1.26.4
     # via
