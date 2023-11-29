@@ -109,7 +109,7 @@ tomlkit==0.11.0
     # via pylint
 types-s3transfer==0.6.0
     # via boto3-stubs
-types-setuptools==68.2.0.2
+types-setuptools==69.0.0.0
     # via -r dev-requirements.in
 typing-extensions==4.8.0
     # via
