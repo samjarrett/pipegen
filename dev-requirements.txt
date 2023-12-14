@@ -21,9 +21,7 @@ boto3==1.34.0
     #   -r requirements.txt
     #   cfn-sync
 boto3-stubs[cloudformation]==1.34.0
-    # via
-    #   -r dev-requirements.in
-    #   boto3-stubs
+    # via -r dev-requirements.in
 botocore==1.34.0
     # via
     #   -r requirements.txt
@@ -53,7 +51,7 @@ idna==3.6
     # via yarl
 iniconfig==1.1.1
     # via pytest
-isort==5.13.1
+isort==5.13.2
     # via
     #   -r dev-requirements.in
     #   pylint
