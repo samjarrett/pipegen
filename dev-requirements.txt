@@ -41,7 +41,7 @@ isort==5.13.2
     # via
     #   -r dev-requirements.in
     #   pylint
-jinja2==3.1.2
+jinja2==3.1.3
     # via -r requirements.txt
 jmespath==0.10.0
     # via
