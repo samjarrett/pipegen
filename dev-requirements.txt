@@ -109,7 +109,7 @@ types-s3transfer==0.6.0
     # via boto3-stubs
 types-setuptools==70.0.0.20240524
     # via -r dev-requirements.in
-typing-extensions==4.12.0
+typing-extensions==4.12.1
     # via
     #   -r dev-requirements.in
     #   astroid
